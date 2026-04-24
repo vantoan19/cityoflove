@@ -126,15 +126,47 @@ export default function Chapter1({ onComplete }: Props) {
       />
 
       {currentBeat === INTRO_BEAT && (
-        <div
-          role="button"
-          tabIndex={0}
-          aria-label="Tap to begin"
-          onClick={handleAdvance}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleAdvance() }}
-          style={{ position: 'absolute', inset: 0, zIndex: 10, cursor: 'pointer' }}
-          data-testid="scene-intro-tap"
-        />
+        <>
+          <div
+            role="button"
+            tabIndex={0}
+            aria-label="Tap to begin"
+            onClick={handleAdvance}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleAdvance() }}
+            style={{ position: 'absolute', inset: 0, zIndex: 10, cursor: 'pointer' }}
+            data-testid="scene-intro-tap"
+          />
+          <button
+            onClick={handleAdvance}
+            style={{
+              position: 'absolute',
+              bottom: '22%',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 20,
+              padding: '14px 40px',
+              fontSize: 'clamp(1rem, 2.5vw, 1.3rem)',
+              fontFamily: 'Georgia, serif',
+              fontWeight: 'bold',
+              color: '#fff',
+              background: 'linear-gradient(135deg, #2ecc71 0%, #1abc9c 100%)',
+              border: '3px solid rgba(255,255,255,0.4)',
+              borderRadius: '50px',
+              cursor: 'pointer',
+              boxShadow: '0 4px 24px rgba(0,0,0,0.4), 0 0 0 0 rgba(46,204,113,0.6)',
+              letterSpacing: '0.05em',
+              animation: 'explorePulse 2.2s ease-in-out infinite',
+            }}
+          >
+            Let&apos;s explore ✦
+          </button>
+          <style>{`
+            @keyframes explorePulse {
+              0%, 100% { box-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 0 0 0 rgba(46,204,113,0.5); }
+              50%       { box-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 0 0 12px rgba(46,204,113,0); }
+            }
+          `}</style>
+        </>
       )}
 
       {currentBeat === CTA_BEAT && (
