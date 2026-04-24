@@ -50,15 +50,17 @@ export default function Background() {
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-    const ctx = canvas.getContext('2d')!
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const canvasEl = canvas as HTMLCanvasElement
+    const ctx = canvasEl.getContext('2d')!
 
     const layerImgs = LAYERS.map(l => loadImages(l.srcs))
     const frameIdx = LAYERS.map(() => 0)
     const lastSwap = LAYERS.map(() => 0)
 
     function resize() {
-      canvas.width = window.innerWidth
-      canvas.height = window.innerHeight
+      canvasEl.width = window.innerWidth
+      canvasEl.height = window.innerHeight
     }
     resize()
     window.addEventListener('resize', resize)
@@ -68,8 +70,8 @@ export default function Background() {
 
     function frame(ts: number) {
       const elapsed = ts - startTs
-      const cw = canvas.width
-      const ch = canvas.height
+      const cw = canvasEl.width
+      const ch = canvasEl.height
 
       // Advance each layer's frame index at its own interval
       LAYERS.forEach((l, i) => {

@@ -11,6 +11,8 @@ interface Props {
   onComplete: () => void
 }
 
+type Phase = 'speaker' | 'reactor' | 'idle'
+
 function prefetchAssets() {
   const allFrames = [
     ...Object.values(nickPoseConfigs).flatMap(c => c.frames),
@@ -22,6 +24,7 @@ function prefetchAssets() {
 export default function Chapter1({ onComplete }: Props) {
   const [currentBeat, setCurrentBeat] = useState(INTRO_BEAT)
   const [showHint, setShowHint] = useState(false)
+  const [phase, setPhase] = useState<Phase>('idle')
 
   // Show "tap to begin" after 2s on beat 0
   useEffect(() => {
@@ -36,6 +39,17 @@ export default function Chapter1({ onComplete }: Props) {
     return () => clearTimeout(id)
   }, [])
 
+  // Phase transitions for dialogue beats
+  useEffect(() => {
+    if (currentBeat === INTRO_BEAT || currentBeat === CTA_BEAT) {
+      setPhase('idle')
+      return
+    }
+    setPhase('speaker')
+    const id = setTimeout(() => setPhase('reactor'), 2000)
+    return () => clearTimeout(id)
+  }, [currentBeat])
+
   const handleAdvance = useCallback(() => {
     setCurrentBeat(b => {
       if (b >= MAX_BEAT) return b
@@ -48,13 +62,27 @@ export default function Chapter1({ onComplete }: Props) {
   const beat = beats[currentBeat]
   const hintLabel = currentBeat === INTRO_BEAT ? 'Tap to begin ↓' : 'Tap to continue'
 
+  const focus = currentBeat === INTRO_BEAT || currentBeat === CTA_BEAT
+    ? 'none'
+    : phase === 'speaker' ? 'nick' : 'judy'
+
+  const speechText = phase === 'speaker' && currentBeat > INTRO_BEAT && currentBeat < CTA_BEAT
+    ? beat.text
+    : null
+
   return (
     <div
       data-testid="chapter-1"
       style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}
     >
       <Background />
-      <Characters nickPose={beat.nickPose} judyPose={beat.judyPose} />
+      <Characters
+        nickPose={beat.nickPose}
+        judyPose={beat.judyPose}
+        focus={focus as 'nick' | 'judy' | 'none'}
+        speechText={speechText}
+        phase={phase}
+      />
 
       {currentBeat > INTRO_BEAT && currentBeat < CTA_BEAT && (
         <DialogueBox

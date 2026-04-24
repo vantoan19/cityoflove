@@ -1,25 +1,45 @@
 @keyframes poseEnter {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.character {
+.charOuter {
   position: absolute;
   bottom: -5.5vh;
   height: 52vh;
-  width: auto;
-  animation: poseEnter 0.4s ease-out forwards;
+  width: fit-content;
+  overflow: visible;
+  transition: scale 0.45s ease-in-out, opacity 0.45s ease-in-out;
+  z-index: 1;
 }
 
 .nick {
   left: 16%;
+  transform-origin: bottom left;
 }
 
 .judy {
   right: 18%;
+  transform-origin: bottom right;
 }
 
-.character img {
+.focused {
+  scale: 1.18;
+  z-index: 2;
+}
+
+.unfocused {
+  scale: 0.88;
+  opacity: 0.5;
+}
+
+.charInner {
+  height: 100%;
+  width: auto;
+  animation: poseEnter 0.4s ease-out forwards;
+}
+
+.charInner img {
   height: 100%;
   width: auto;
   display: block;

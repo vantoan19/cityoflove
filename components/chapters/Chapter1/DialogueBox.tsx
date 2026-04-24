@@ -13,10 +13,6 @@ interface Props {
 export default function DialogueBox({ beat, beatIndex, onAdvance, onComplete }: Props) {
   const isCTA = beatIndex === CTA_BEAT
 
-  const handleTap = () => {
-    if (!isCTA) onAdvance()
-  }
-
   return (
     <>
       <div
@@ -24,16 +20,12 @@ export default function DialogueBox({ beat, beatIndex, onAdvance, onComplete }: 
         className={styles.tapTarget}
         role="button"
         tabIndex={0}
-        onClick={handleTap}
+        onClick={() => { if (!isCTA) onAdvance() }}
         onKeyDown={(e) => { if (!isCTA && (e.key === 'Enter' || e.key === ' ')) onAdvance() }}
         aria-label="Tap to continue"
       />
 
       <div className={styles.box}>
-        {!isCTA && beat.text && (
-          <p key={beat.text} className={styles.text}>{beat.text}</p>
-        )}
-
         {isCTA && (
           <button className={styles.ctaButton} onClick={onComplete}>
             {beat.cta}

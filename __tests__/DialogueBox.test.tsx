@@ -3,9 +3,9 @@ import userEvent from '@testing-library/user-event'
 import DialogueBox from '../components/chapters/Chapter1/DialogueBox'
 import { beats } from '../components/chapters/Chapter1/chapter1-beats'
 
-test('renders dialogue text for a normal beat', () => {
+test('renders progress dots for a normal beat', () => {
   render(<DialogueBox beat={beats[1]} beatIndex={1} onAdvance={vi.fn()} onComplete={vi.fn()} />)
-  expect(screen.getByText('Some cities are planned.')).toBeInTheDocument()
+  expect(screen.getAllByTestId('beat-dot')).toHaveLength(7)
 })
 
 test('calls onAdvance when tapping scene wrapper', async () => {
