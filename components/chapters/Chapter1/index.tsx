@@ -23,13 +23,13 @@ function prefetchAssets() {
 
 export default function Chapter1({ onComplete }: Props) {
   const [currentBeat, setCurrentBeat] = useState(INTRO_BEAT)
-  const [showHint, setShowHint] = useState(false)
   const [phase, setPhase] = useState<Phase>('idle')
+  const [showIntroHint, setShowIntroHint] = useState(false)
 
-  // Show "tap to begin" after 2s on beat 0
+  // Show intro hint after 2s
   useEffect(() => {
     if (currentBeat !== INTRO_BEAT) return
-    const id = setTimeout(() => setShowHint(true), 2000)
+    const id = setTimeout(() => setShowIntroHint(true), 2000)
     return () => clearTimeout(id)
   }, [currentBeat])
 
@@ -39,53 +39,56 @@ export default function Chapter1({ onComplete }: Props) {
     return () => clearTimeout(id)
   }, [])
 
-  // Phase transitions for dialogue beats
+  // Set speaker phase when beat advances — no auto-transition to reactor
   useEffect(() => {
     if (currentBeat === INTRO_BEAT || currentBeat === CTA_BEAT) {
       setPhase('idle')
       return
     }
     setPhase('speaker')
-    const id = setTimeout(() => setPhase('reactor'), 2000)
-    return () => clearTimeout(id)
   }, [currentBeat])
 
+  // Each click advances: intro → beat1, speaker → reactor, reactor → next beat
   const handleAdvance = useCallback(() => {
-    setCurrentBeat(b => {
-      if (b >= MAX_BEAT) return b
-      const next = b + 1
-      if (next > INTRO_BEAT) setShowHint(false)
-      return next
-    })
-  }, [])
+    if (currentBeat === INTRO_BEAT) {
+      setCurrentBeat(1)
+      setShowIntroHint(false)
+      return
+    }
+    if (currentBeat >= MAX_BEAT) return
+    if (phase === 'speaker') {
+      setPhase('reactor')
+    } else if (phase === 'reactor') {
+      setCurrentBeat(b => b + 1)
+    }
+  }, [currentBeat, phase])
 
   const beat = beats[currentBeat]
-  const hintLabel = currentBeat === INTRO_BEAT ? 'Tap to begin ↓' : 'Tap to continue'
+  const isDialogue = currentBeat > INTRO_BEAT && currentBeat < CTA_BEAT
 
   const focus = currentBeat === INTRO_BEAT || currentBeat === CTA_BEAT
     ? 'none'
     : phase === 'speaker' ? 'nick' : 'judy'
 
-  const speechText = phase === 'speaker' && currentBeat > INTRO_BEAT && currentBeat < CTA_BEAT
-    ? beat.text
-    : null
+  const speechText = phase === 'speaker' && isDialogue ? beat.text : null
+  const reactionText = phase === 'reactor' && isDialogue ? (beat.reaction ?? null) : null
 
-  const reactionText = phase === 'reactor' && currentBeat > INTRO_BEAT && currentBeat < CTA_BEAT
-    ? (beat.reaction ?? null)
-    : null
-
-  // At scale(2): visible window = 50% of scene. +8% pan shows Nick (left 19%), -8% shows Judy (right 20%).
   const cameraTransform =
     phase === 'idle'    ? 'scale(1) translateX(0)' :
     phase === 'speaker' ? 'scale(2) translateX(8%)' :
                           'scale(2) translateX(-8%)'
+
+  const hintLabel =
+    currentBeat === INTRO_BEAT ? 'Tap anywhere to begin' :
+    phase === 'speaker'        ? 'Tap to see her reaction →' :
+                                 'Tap to continue →'
 
   return (
     <div
       data-testid="chapter-1"
       style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}
     >
-      {/* Zoomable scene layer — Background + Characters zoom together */}
+      {/* Zoomable scene layer */}
       <div style={{
         position: 'absolute', inset: 0,
         transform: cameraTransform,
@@ -103,16 +106,7 @@ export default function Chapter1({ onComplete }: Props) {
         />
       </div>
 
-      {currentBeat > INTRO_BEAT && currentBeat < CTA_BEAT && (
-        <DialogueBox
-          beat={beat}
-          beatIndex={currentBeat}
-          onAdvance={handleAdvance}
-          onComplete={onComplete}
-        />
-      )}
-
-      {/* Hero title image — fades in on intro, fades out when dialogue begins */}
+      {/* Title — always visible */}
       <img
         src="/chapter1/title.png"
         alt="The City of Love"
@@ -124,25 +118,38 @@ export default function Chapter1({ onComplete }: Props) {
           width: 'clamp(400px, 75vw, 1100px)',
           zIndex: 5,
           pointerEvents: 'none',
-          opacity: currentBeat === INTRO_BEAT ? 1 : 0,
-          transition: 'opacity 0.6s ease',
           filter: 'drop-shadow(0 0 18px rgba(0,0,0,0.9)) drop-shadow(0 0 40px rgba(0,0,0,0.7))',
         }}
       />
 
+      {/* Dialogue tap target */}
+      {isDialogue && (
+        <DialogueBox
+          beat={beat}
+          beatIndex={currentBeat}
+          onAdvance={handleAdvance}
+          onComplete={onComplete}
+        />
+      )}
+
+      {/* Intro full-screen tap */}
       {currentBeat === INTRO_BEAT && (
+        <div
+          role="button"
+          tabIndex={0}
+          aria-label="Tap to begin"
+          onClick={handleAdvance}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleAdvance() }}
+          style={{ position: 'absolute', inset: 0, zIndex: 10, cursor: 'pointer' }}
+          data-testid="scene-intro-tap"
+        />
+      )}
+
+      {/* CTA beat — Let's explore button */}
+      {currentBeat === CTA_BEAT && (
         <>
-          <div
-            role="button"
-            tabIndex={0}
-            aria-label="Tap to begin"
-            onClick={handleAdvance}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleAdvance() }}
-            style={{ position: 'absolute', inset: 0, zIndex: 10, cursor: 'pointer' }}
-            data-testid="scene-intro-tap"
-          />
           <button
-            onClick={handleAdvance}
+            onClick={onComplete}
             style={{
               position: 'absolute',
               bottom: 'calc(22% + 30vh)',
@@ -158,7 +165,6 @@ export default function Chapter1({ onComplete }: Props) {
               border: '3px solid rgba(255,255,255,0.4)',
               borderRadius: '50px',
               cursor: 'pointer',
-              boxShadow: '0 4px 24px rgba(0,0,0,0.4), 0 0 0 0 rgba(46,204,113,0.6)',
               letterSpacing: '0.05em',
               animation: 'explorePulse 2.2s ease-in-out infinite',
             }}
@@ -174,16 +180,10 @@ export default function Chapter1({ onComplete }: Props) {
         </>
       )}
 
-      {currentBeat === CTA_BEAT && (
-        <DialogueBox
-          beat={beat}
-          beatIndex={currentBeat}
-          onAdvance={handleAdvance}
-          onComplete={onComplete}
-        />
+      {/* Navigation hint — intro (after delay) or always during dialogue */}
+      {(showIntroHint || isDialogue) && currentBeat !== CTA_BEAT && (
+        <NavigationHint label={hintLabel} />
       )}
-
-      {showHint && <NavigationHint label={hintLabel} />}
     </div>
   )
 }
