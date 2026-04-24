@@ -107,6 +107,21 @@ export default function Chapter1({ onComplete }: Props) {
         />
       )}
 
+      {/* Subtle overlay behind title so it reads against the background */}
+      <div style={{
+        position: 'absolute',
+        top: 'calc(18% - 50vh)',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: 'clamp(500px, 85vw, 1200px)',
+        height: 'clamp(120px, 20vh, 280px)',
+        background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.35) 0%, transparent 75%)',
+        zIndex: 4,
+        pointerEvents: 'none',
+        opacity: currentBeat === INTRO_BEAT ? 1 : 0,
+        transition: 'opacity 0.6s ease',
+      }} />
+
       {/* Hero title image — fades in on intro, fades out when dialogue begins */}
       <img
         src="/chapter1/title.png"
