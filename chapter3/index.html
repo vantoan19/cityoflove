@@ -143,6 +143,14 @@
       color:#F5EFE0; opacity:0; pointer-events:none; transition:opacity 0.4s;
       text-shadow:0 0 20px rgba(200,160,80,0.6);
     ">open the others first</div>
+    <button id="nextBtn" style="
+  display:none; position:fixed; bottom:5%; left:50%; transform:translateX(-50%);
+  font-family:'Caveat',cursive; font-size:clamp(16px,2vw,26px); font-weight:600;
+  background:rgba(245,239,224,0.9); color:#2A2118;
+  border:2px solid #2A2118; border-radius:4px;
+  padding:10px 28px; cursor:pointer;
+  box-shadow:2px 2px 0 rgba(42,33,24,0.18);
+" onclick="location.href='../chapter4/index.html'">next chapter →</button>
   </div>
   <script>
     const BEATS = [
@@ -431,6 +439,13 @@
       runUnwrap(index, () => {
         showBarMessage(index);
         if (openedBars.size === 7 && !openedBars.has(7)) setTimeout(triggerLockBreak, 400);
+        if (index === 7) {
+          setTimeout(() => {
+            const btn = document.getElementById('nextBtn');
+            btn.style.display = 'block';
+            gsap.fromTo(btn, { opacity: 0 }, { opacity: 1, duration: 0.6 });
+          }, 800);
+        }
       });
     }
 
