@@ -1,0 +1,76 @@
+/* ── Chapter 5 — "The Part Where We Went Too Fast" ── */
+
+.ch5-root {
+  position: relative;
+  width: 100%; height: 100%;
+  overflow-y: auto; overflow-x: hidden;
+  font-family: 'Poppins', 'Inter', sans-serif;
+  color: #F0F0F0;
+  background: #0D1117;
+}
+
+/* ── Background image ── */
+.ch5-bg {
+  position: fixed; inset: 0; z-index: 0;
+  background-size: cover; background-position: center;
+  background-image: url('/chapter5/bg_rainy_forest.png');
+  pointer-events: none;
+}
+.ch5-root.ch5-m2 .ch5-bg {
+  background-image: url('/chapter5/bg_foggy_forest.png');
+  /* instant swap — no transition */
+}
+
+/* ── Rain layer ── */
+.ch5-rain {
+  position: fixed; inset: 0; z-index: 1;
+  pointer-events: none; overflow: hidden;
+}
+.ch5-drop {
+  position: absolute; top: -20px;
+  width: 1.5px; border-radius: 2px;
+  background: rgba(150, 170, 200, 0.6);
+  animation: ch5RainFall linear infinite;
+}
+@keyframes ch5RainFall {
+  from { transform: translateY(0) translateX(0); }
+  to   { transform: translateY(115vh) translateX(var(--dx, -20px)); }
+}
+
+/* ── Fog overlay (M2 only) ── */
+.ch5-fog {
+  position: fixed; inset: 0; z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(200,210,230,0.12) 0%, transparent 70%);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+}
+.ch5-root.ch5-m2 .ch5-fog {
+  animation: ch5Breathe 4s ease-in-out infinite;
+}
+@keyframes ch5Breathe {
+  0%, 100% { opacity: 0.04; }
+  50%       { opacity: 0.10; }
+}
+
+/* ── Memory flash overlay ── */
+.ch5-flash {
+  position: fixed; inset: 0; z-index: 100;
+  display: none;
+  background-size: cover; background-position: center;
+  background-color: #fff;
+}
+.ch5-glitch {
+  filter: invert(1);
+}
+
+/* ── Scroll content ── */
+.ch5-scroll {
+  position: relative; z-index: 3;
+  max-width: 620px; margin: 0 auto;
+  padding: 0 28px 30vh;
+}
+
+/* ── Spacers ── */
+.ch5-sp    { height: 12vh; }
+.ch5-sp-m2 { height: 40vh; }
