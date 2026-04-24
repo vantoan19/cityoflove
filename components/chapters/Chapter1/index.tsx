@@ -115,7 +115,7 @@ export default function Chapter1({ onComplete }: Props) {
         transform: 'translateX(-50%)',
         width: 'clamp(500px, 85vw, 1200px)',
         height: 'clamp(120px, 20vh, 280px)',
-        background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.35) 0%, transparent 75%)',
+        background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.6) 0%, transparent 75%)',
         zIndex: 4,
         pointerEvents: 'none',
         opacity: currentBeat === INTRO_BEAT ? 1 : 0,
