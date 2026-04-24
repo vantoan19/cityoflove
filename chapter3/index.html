@@ -179,6 +179,54 @@
     function hideText() {
       gsap.to(document.getElementById('narration'), { opacity: 0, duration: 0.4 });
     }
+
+    let currentBeat = -1;
+    let beatTimer = null;
+    let phase1Done = false;
+
+    function advanceBeat() {
+      if (phase1Done) return;
+      currentBeat++;
+      if (currentBeat >= BEATS.length) return;
+
+      const beat = BEATS[currentBeat];
+
+      if (beat.text === null) {
+        // Silent beat — fade out then transition
+        hideText();
+        clearTimeout(beatTimer);
+        setTimeout(startPhase2, 1500);
+        return;
+      }
+
+      showText(beat.text);
+      if (beat.fox)   setPose('fox',   beat.fox);
+      if (beat.bunny) setPose('bunny', beat.bunny);
+
+      clearTimeout(beatTimer);
+      // 0.5s fade-in + 2s hold = 2.5s before auto-advance
+      beatTimer = setTimeout(advanceBeat, 2500);
+    }
+
+    // Tap / click
+    document.addEventListener('click', () => { clearTimeout(beatTimer); advanceBeat(); });
+
+    // Scroll
+    document.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      clearTimeout(beatTimer);
+      advanceBeat();
+    }, { passive: false });
+
+    // Touch swipe up
+    let touchStartY = 0;
+    document.addEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; }, { passive: true });
+    document.addEventListener('touchend', (e) => {
+      if (touchStartY - e.changedTouches[0].clientY > 30) { clearTimeout(beatTimer); advanceBeat(); }
+    }, { passive: true });
+
+    // Kick off first beat after short delay
+    setTimeout(advanceBeat, 600);
   </script>
 </body>
 </html>
