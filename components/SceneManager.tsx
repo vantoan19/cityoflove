@@ -9,7 +9,13 @@ const Chapter2 = dynamic(() => import('./chapters/Chapter2'), { ssr: false })
 const Chapter3 = dynamic(() => import('./chapters/Chapter3'), { ssr: false })
 
 export default function SceneManager() {
-  const [currentChapter, setCurrentChapter] = useState(1)
+  const [currentChapter, setCurrentChapter] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const n = parseInt(window.location.hash.replace('#ch', ''), 10)
+      if (n >= 1) return n
+    }
+    return 1
+  })
   const [transitioning, setTransitioning] = useState(false)
   const [pendingChapter, setPendingChapter] = useState<number | null>(null)
 
