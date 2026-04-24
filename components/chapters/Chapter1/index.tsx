@@ -140,7 +140,7 @@ export default function Chapter1({ onComplete }: Props) {
             onClick={handleAdvance}
             style={{
               position: 'absolute',
-              bottom: '22%',
+              bottom: 'calc(22% + 30vh)',
               left: '50%',
               transform: 'translateX(-50%)',
               zIndex: 20,
