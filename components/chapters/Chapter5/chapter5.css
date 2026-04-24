@@ -3,7 +3,7 @@
 .ch5-root {
   position: relative;
   width: 100%; height: 100%;
-  overflow-y: auto; overflow-x: hidden;
+  overflow: hidden;
   font-family: 'Poppins', 'Inter', sans-serif;
   color: #F0F0F0;
   background: #0D1117;
@@ -18,7 +18,6 @@
 }
 .ch5-root.ch5-m2 .ch5-bg {
   background-image: url('/chapter5/bg_foggy_forest.png');
-  /* instant swap — no transition */
 }
 
 /* ── Rain layer ── */
@@ -84,20 +83,19 @@
   filter: invert(1);
 }
 
-/* ── Scroll content ── */
+/* ── Scroll content — fixed viewport, CSS grid centers all beats in same cell ── */
 .ch5-scroll {
-  position: relative; z-index: 3;
-  max-width: 620px; margin: 0 auto;
-  padding: 0 28px 30vh;
+  position: fixed; inset: 0; z-index: 10;
+  display: grid; place-items: center;
+  pointer-events: none;
 }
-
-/* ── Spacers ── */
-.ch5-sp    { height: 12vh; }
-.ch5-sp-m2 { height: 40vh; }
 
 /* ── Beat reveal (M1 — fast 0.5s) ── */
 .ch5-beat {
-  padding: 5vh 0; text-align: center;
+  grid-area: 1 / 1;
+  width: 100%; max-width: 620px;
+  padding: 0 28px;
+  text-align: center;
   opacity: 0; transform: translateY(20px);
   transition: opacity 0.5s cubic-bezier(.22,.61,.36,1),
               transform 0.5s cubic-bezier(.22,.61,.36,1);
@@ -112,7 +110,10 @@
 
 /* ── Beat reveal (M2 — slow with blur) ── */
 .ch5-beat-m2 {
-  padding: 6vh 0; text-align: center;
+  grid-area: 1 / 1;
+  width: 100%; max-width: 620px;
+  padding: 0 28px;
+  text-align: center;
   opacity: 0; transform: translateY(24px);
   filter: blur(4px);
   transition: opacity 1.2s cubic-bezier(.22,.61,.36,1),
@@ -152,13 +153,51 @@
 .ch5-t-m2-key  { font-size:clamp(20px,2.5vw,30px); font-weight:500; line-height:1.8; color:#E8ECF0; }
 .ch5-t-m2-core { font-size:clamp(20px,2.5vw,30px); font-weight:400; line-height:1.9; color:#EEF2F6; }
 
+/* ── Text shadow keeps beats readable over any background ── */
+.ch5-beat p,
+.ch5-beat-m2 p {
+  margin: 0;
+  padding: 0;
+  text-shadow: 0 2px 16px rgba(0,5,15,0.92), 0 0 40px rgba(0,5,15,0.55);
+}
+
+/* ── Scroll hint ── */
+.ch5-hint {
+  position: fixed;
+  bottom: 48px; left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Poppins', 'Inter', sans-serif;
+  font-size: clamp(13px,1.5vw,16px);
+  color: rgba(200,215,230,0.55);
+  text-align: center;
+  pointer-events: none;
+  letter-spacing: 0.1em;
+  z-index: 20;
+  opacity: 0; transition: opacity 0.5s ease;
+  white-space: nowrap;
+}
+.ch5-hint.ch5-on { opacity: 1; }
+.ch5-hint-arrow {
+  display: block; margin-top: 6px;
+  animation: ch5Bounce 1.5s ease-in-out infinite;
+}
+@keyframes ch5Bounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(8px); }
+}
+
 /* ── Chapter end button ── */
 .ch5-end {
-  text-align:center; opacity:0;
-  transition: opacity 1.5s ease;
-  padding: 8vh 0 20vh;
+  position: fixed;
+  bottom: 48px; left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  opacity: 0; transition: opacity 1.5s ease;
+  pointer-events: none;
+  z-index: 20;
+  white-space: nowrap;
 }
-.ch5-end.ch5-on { opacity: 1; }
+.ch5-end.ch5-on { opacity: 1; pointer-events: auto; }
 .ch5-end-label {
   font-size:clamp(13px,1.5vw,16px); color:rgba(200,215,230,0.5);
   letter-spacing:0.12em; text-transform:uppercase; margin-bottom:28px;
@@ -175,11 +214,4 @@
 .ch5-next-btn:hover {
   border-color:rgba(200,215,230,0.7);
   color:rgba(200,215,230,1);
-}
-
-/* ── Paragraph margin reset ── */
-.ch5-beat p,
-.ch5-beat-m2 p {
-  margin: 0;
-  padding: 0;
 }
