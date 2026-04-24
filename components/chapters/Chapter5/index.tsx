@@ -52,7 +52,52 @@ export default function Chapter5({ onComplete }: Props) {
       <div className="ch5-fog" />
       <div className="ch5-flash" ref={flashRef} />
       <div className="ch5-scroll" ref={scrollRef}>
-        {/* beats added in later tasks */}
+        <div className="ch5-sp" />
+
+        {/* b1: deceptive calm */}
+        <div className="ch5-beat" id="ch5-b1">
+          <p className="ch5-t-calm">Then…</p>
+        </div>
+        <div className="ch5-sp" />
+
+        {/* b2 */}
+        <div className="ch5-beat" id="ch5-b2">
+          <p className="ch5-t-bold">we did something impressive.</p>
+        </div>
+        <div className="ch5-sp" />
+
+        {/* b3: hero line */}
+        <div className="ch5-beat" id="ch5-b3">
+          <p className="ch5-t-hero">We speedran a relationship.</p>
+        </div>
+        <div className="ch5-sp" />
+
+        {/* b4: monospace trio */}
+        <div className="ch5-beat" id="ch5-b4">
+          <p className="ch5-t-mono">Any% completion.</p>
+          <p className="ch5-t-mono" data-d="150">No tutorials.</p>
+          <p className="ch5-t-mono" data-d="300">No save points.</p>
+        </div>
+        <div className="ch5-sp" />
+
+        {/* b7 */}
+        <div className="ch5-beat" id="ch5-b7">
+          <p className="ch5-t-bold">I might have pressed</p>
+        </div>
+        <div className="ch5-sp" />
+
+        {/* b8: skew glitch */}
+        <div className="ch5-beat ch5-skew" id="ch5-b8">
+          <p className="ch5-t-quote">&ldquo;fast forward&rdquo;</p>
+        </div>
+        <div className="ch5-sp" />
+
+        {/* b9: confession */}
+        <div className="ch5-beat" id="ch5-b9">
+          <p className="ch5-t-conf">a bit too hard.</p>
+        </div>
+
+        {/* M2 beats added in Task 5 */}
       </div>
     </div>
   )
