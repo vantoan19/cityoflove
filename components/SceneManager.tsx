@@ -10,10 +10,12 @@ const Chapter1 = dynamic(() => import('./chapters/Chapter1'), { ssr: false })
 const Chapter2 = dynamic(() => import('./chapters/Chapter2'), { ssr: false })
 const Chapter3 = dynamic(() => import('./chapters/Chapter3'), { ssr: false })
 const Chapter5 = dynamic(() => import('./chapters/Chapter5'), { ssr: false })
+const Chapter6 = dynamic(() => import('./chapters/Chapter6'), { ssr: false })
 
 function dirFor(to: number): Dir {
-  if (to === 2) return 'ttb'   // ch1 → ch2: top-to-bottom
-  if (to === 3) return 'btt'   // ch2 → ch3: bottom-to-top
+  if (to === 2) return 'ttb'
+  if (to === 3) return 'btt'
+  if (to === 7) return 'ttb'
   return 'rtl'
 }
 
@@ -66,7 +68,12 @@ export default function SceneManager() {
           <Chapter5 onComplete={() => advanceChapter(6)} />
         </div>
       )}
-      {currentChapter > 3 && currentChapter !== 5 && (
+      {currentChapter === 6 && (
+        <div data-testid="chapter-6" style={{ width: '100%', height: '100%' }}>
+          <Chapter6 onComplete={() => advanceChapter(7)} />
+        </div>
+      )}
+      {currentChapter > 3 && currentChapter !== 5 && currentChapter !== 6 && (
         <div data-testid={`chapter-stub-${currentChapter}`} style={{ width: '100%', height: '100%' }}>
           <ChapterStub
             chapterNumber={currentChapter}
