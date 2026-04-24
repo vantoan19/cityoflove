@@ -11,7 +11,6 @@ const LAYERS: LayerDef[] = [
   {
     srcs: Array.from({ length: 5 }, (_, i) => `/chapter1/backgrounds/sky/frame${i + 1}.png`),
     intervalMs: 1200,
-    animX: (t, cw) => Math.sin((t / 60000) * Math.PI * 2) * cw * -0.025,
   },
   {
     srcs: ['/chapter1/backgrounds/mountains/frame1.png'],
