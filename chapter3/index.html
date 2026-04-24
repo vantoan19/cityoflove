@@ -367,8 +367,19 @@
         }
       }
 
-      render();
-      window.addEventListener('resize', render);
+      function renderAndRestore() {
+        render();
+        openedBars.forEach(i => {
+          const btn = document.getElementById(`bar-btn-${i}`);
+          const barImg = document.getElementById(`bar-img-${i}`);
+          if (btn) btn.style.display = 'none';
+          if (barImg) { barImg.src = `bars/bar_${i + 1}_unwrap_6_tucked.png`; barImg.style.display = 'block'; }
+        });
+        if (activeMessageEl) { activeMessageEl.remove(); activeMessageEl = null; }
+      }
+
+      renderAndRestore();
+      window.addEventListener('resize', renderAndRestore);
     }
 
     function onBarHover(index, entering) {
@@ -452,7 +463,7 @@
     function showBarMessage(index) {
       const cell = document.getElementById(`bar-cell-${index}`);
       const cr   = cell.getBoundingClientRect();
-      const rot  = (Math.random() * 3 - 1.5).toFixed(1);
+      const rot  = parseFloat((Math.random() * 3 - 1.5).toFixed(1));
 
       const msg = document.createElement('div');
       msg.className = 'bar-message';
@@ -460,12 +471,14 @@
       msg.style.cssText = `
         left:${Math.round(cr.left + cr.width / 2)}px;
         top:${Math.round(cr.top - 12)}px;
-        transform:translateX(-50%) translateY(-100%) rotate(${rot}deg);
       `;
       document.body.appendChild(msg);
       activeMessageEl = msg;
 
-      gsap.fromTo(msg, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' });
+      gsap.fromTo(msg,
+        { opacity: 0, y: 10, xPercent: -50, yPercent: -100, rotation: rot },
+        { opacity: 1, y: 0,  xPercent: -50, yPercent: -100, rotation: rot, duration: 0.4, ease: 'power2.out' }
+      );
     }
 
     function jigglePadlock() {
