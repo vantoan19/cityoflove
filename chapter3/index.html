@@ -17,6 +17,44 @@
     #phase2 { position: fixed; inset: 0; z-index: 2; opacity: 0; pointer-events: none;
               background: #0d0a1a; display: flex; align-items: center; justify-content: center; }
     #phase2.active { pointer-events: auto; }
+
+    .char {
+      position: absolute;
+      bottom: 8vh;
+      width: 22vw;
+      max-width: 280px;
+    }
+    .char img { width: 100%; display: block; }
+    #fox  { left: 8vw; }
+    #bunny { right: 8vw; }
+
+    /* Night lighting — multiply overlay */
+    .char::before {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background: rgba(20, 30, 80, 0.18);
+      mix-blend-mode: multiply;
+    }
+    #fox::after {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background: linear-gradient(100deg,
+        rgba(40,60,160,0.50) 0%, rgba(40,60,160,0.12) 30%,
+        transparent 48%,
+        rgba(200,120,20,0.22) 65%, rgba(200,120,20,0.55) 100%);
+      mix-blend-mode: multiply;
+    }
+    #bunny::after {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background: linear-gradient(100deg,
+        rgba(200,120,20,0.55) 0%, rgba(200,120,20,0.22) 35%,
+        transparent 52%,
+        rgba(40,60,160,0.12) 70%, rgba(40,60,160,0.50) 100%);
+      mix-blend-mode: multiply;
+    }
+
+    /* Breathing animation */
+    @keyframes breathe { 0%,100%{transform:scaleY(1)} 50%{transform:scaleY(1.012)} }
+    #fox   { animation: breathe 4s ease-in-out infinite; }
+    #bunny { animation: breathe 4s ease-in-out 2s infinite; }
   </style>
 </head>
 <body>
@@ -32,6 +70,12 @@
            style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
       <img id="cityOverlay" src="backgrounds/city_overlays/frame1.png"
            style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;mix-blend-mode:screen;">
+    </div>
+    <div class="char" id="fox">
+      <img id="foxImg" src="../chapter1/animations/fox/pose1_neutral_idle/frame1.png" alt="">
+    </div>
+    <div class="char" id="bunny">
+      <img id="bunnyImg" src="../chapter1/animations/bunny/pose1_neutral_idle/frame1.png" alt="">
     </div>
   </div>
   <div id="phase2"></div>
