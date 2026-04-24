@@ -67,9 +67,13 @@ export default function Chapter1({ onComplete }: Props) {
 
       {currentBeat === INTRO_BEAT && (
         <div
+          role="button"
+          tabIndex={0}
+          aria-label="Tap to begin"
           onClick={handleAdvance}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleAdvance() }}
           style={{ position: 'absolute', inset: 0, zIndex: 10, cursor: 'pointer' }}
-          data-testid="scene-tap-target"
+          data-testid="scene-intro-tap"
         />
       )}
 

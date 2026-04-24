@@ -14,16 +14,17 @@ export default function ChapterTransition({ active, onMidpoint, onDone }: Props)
     if (!active) return
     // Fade in
     setOpacity(1)
-    const midTimer = setTimeout(() => {
+    const timers: ReturnType<typeof setTimeout>[] = []
+    timers.push(setTimeout(() => {
       onMidpoint()
       // Fade out
-      setTimeout(() => {
+      timers.push(setTimeout(() => {
         setOpacity(0)
-        setTimeout(onDone, 600)
-      }, 100)
-    }, 800)
-    return () => clearTimeout(midTimer)
-  }, [active])
+        timers.push(setTimeout(onDone, 600))
+      }, 100))
+    }, 800))
+    return () => timers.forEach(clearTimeout)
+  }, [active, onMidpoint, onDone])
 
   if (!active && opacity === 0) return null
 

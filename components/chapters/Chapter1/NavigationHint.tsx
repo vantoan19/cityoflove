@@ -6,7 +6,7 @@ interface Props {
 
 export default function NavigationHint({ label }: Props) {
   return (
-    <p key={label} className={styles.hint}>
+    <p className={styles.hint}>
       {label}
     </p>
   )

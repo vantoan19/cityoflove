@@ -22,7 +22,10 @@ export default function DialogueBox({ beat, beatIndex, onAdvance, onComplete }: 
       <div
         data-testid="scene-tap-target"
         className={styles.tapTarget}
+        role="button"
+        tabIndex={0}
         onClick={handleTap}
+        onKeyDown={(e) => { if (!isCTA && (e.key === 'Enter' || e.key === ' ')) onAdvance() }}
         aria-label="Tap to continue"
       />
 

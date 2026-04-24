@@ -1,11 +1,11 @@
 import type { NickPose, JudyPose, PoseConfig } from './types'
 
-const n = (pose: string, count: number, dir: string): string[] =>
+const n = (_pose: string, count: number, dir: string): string[] =>
   Array.from({ length: count }, (_, i) =>
     `/chapter1/characters/nick/${dir}/frame${i + 1}.png`
   )
 
-const j = (pose: string, count: number, dir: string): string[] =>
+const j = (_pose: string, count: number, dir: string): string[] =>
   Array.from({ length: count }, (_, i) =>
     `/chapter1/characters/judy/${dir}/frame${i + 1}.png`
   )
