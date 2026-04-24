@@ -9,6 +9,7 @@ export type JudyPose =
 export interface Beat {
   text: string | null
   cta?: string
+  reaction?: string
   nickPose: NickPose
   judyPose: JudyPose
 }

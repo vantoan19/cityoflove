@@ -10,10 +10,11 @@ interface Props {
   judyPose: JudyPose
   focus: 'nick' | 'judy' | 'none'
   speechText: string | null
+  reactionText: string | null
   phase: 'speaker' | 'reactor' | 'idle'
 }
 
-export default function Characters({ nickPose, judyPose, focus, speechText, phase }: Props) {
+export default function Characters({ nickPose, judyPose, focus, speechText, reactionText, phase }: Props) {
   const nickCfg = nickPoseConfigs[nickPose]
   const judyCfg = judyPoseConfigs[judyPose]
 
@@ -27,7 +28,7 @@ export default function Characters({ nickPose, judyPose, focus, speechText, phas
           <SpriteAnimation frames={nickCfg.frames} frameInterval={nickCfg.frameInterval} alt="Nick" />
         </div>
         {focus === 'nick' && phase === 'speaker' && speechText && (
-          <SpeechBubble text={speechText} side="left" />
+          <SpeechBubble text={speechText} side="left" variant="speech" />
         )}
       </div>
 
@@ -35,6 +36,9 @@ export default function Characters({ nickPose, judyPose, focus, speechText, phas
         <div key={`judy-${judyPose}`} className={styles.charInner}>
           <SpriteAnimation frames={judyCfg.frames} frameInterval={judyCfg.frameInterval} alt="Judy" />
         </div>
+        {phase === 'reactor' && reactionText && (
+          <SpeechBubble text={reactionText} side="right" variant="reaction" />
+        )}
       </div>
     </>
   )

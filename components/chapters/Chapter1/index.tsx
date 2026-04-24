@@ -70,6 +70,10 @@ export default function Chapter1({ onComplete }: Props) {
     ? beat.text
     : null
 
+  const reactionText = phase === 'reactor' && currentBeat > INTRO_BEAT && currentBeat < CTA_BEAT
+    ? (beat.reaction ?? null)
+    : null
+
   // At scale(2): visible window = 50% of scene. +8% pan shows Nick (left 19%), -8% shows Judy (right 20%).
   const cameraTransform =
     phase === 'idle'    ? 'scale(1) translateX(0)' :
@@ -94,6 +98,7 @@ export default function Chapter1({ onComplete }: Props) {
           judyPose={beat.judyPose}
           focus={focus as 'nick' | 'judy' | 'none'}
           speechText={speechText}
+          reactionText={reactionText}
           phase={phase}
         />
       </div>
