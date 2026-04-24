@@ -70,11 +70,9 @@ export default function Chapter1({ onComplete }: Props) {
     ? beat.text
     : null
 
-  // Camera zoom: pan onto the active character, zoom back out on idle
+  // Camera zoom: gentle zoom keeping both characters in frame
   const cameraTransform =
-    phase === 'speaker' ? 'scale(2.5) translateX(28%)' :
-    phase === 'reactor' ? 'scale(2.5) translateX(-28%)' :
-    'scale(1) translateX(0)'
+    phase === 'idle' ? 'scale(1)' : 'scale(1.4)'
 
   return (
     <div
