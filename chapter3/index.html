@@ -96,7 +96,13 @@
     </div>
     <div id="narration"></div>
   </div>
-  <div id="phase2"></div>
+  <div id="phase2">
+    <div id="chocScene" style="position:relative;width:100%;height:100%;">
+      <img id="chocBox" src="chocolate_box_open.png"
+           style="width:100%;height:100%;object-fit:contain;display:block;">
+      <div id="barContainer" style="position:absolute;inset:0;pointer-events:none;"></div>
+    </div>
+  </div>
   <script>
     const BEATS = [
       { text: "There was a night that almost didn't exist.", fox: 'pose1_neutral_idle',  bunny: 'pose1_neutral_idle'     },
@@ -227,6 +233,31 @@
 
     // Kick off first beat after short delay
     setTimeout(advanceBeat, 600);
+
+    function startPhase2() {
+      phase1Done = true;
+      clearTimeout(beatTimer);
+      clearInterval(foxFrameTimer);
+      clearInterval(bunnyFrameTimer);
+
+      const phase1 = document.getElementById('phase1');
+      const phase2 = document.getElementById('phase2');
+
+      gsap.to(phase1, {
+        opacity: 0, duration: 0.6,
+        onComplete: () => { phase1.style.display = 'none'; }
+      });
+
+      gsap.fromTo(phase2,
+        { opacity: 0, y: '30vh' },
+        { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out',
+          onStart: () => { phase2.classList.add('active'); },
+          onComplete: () => {
+            initChocGame();
+          }
+        }
+      );
+    }
   </script>
 </body>
 </html>
