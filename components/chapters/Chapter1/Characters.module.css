@@ -12,11 +12,11 @@
 }
 
 .nick {
-  left: calc(3% + 150px);
+  left: calc(3% + 250px);
 }
 
 .judy {
-  right: calc(5% + 150px);
+  right: calc(5% + 250px);
 }
 
 .character img {
