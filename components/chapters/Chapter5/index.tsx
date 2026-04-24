@@ -29,20 +29,49 @@ function spawnRain(
   }
 }
 
+function spawnFogPuffs(container: HTMLDivElement) {
+  container.innerHTML = ''
+  for (let i = 0; i < 13; i++) {
+    const puff  = document.createElement('div')
+    puff.className = 'ch5-fog-puff'
+    const w     = 100 + Math.random() * 180
+    const h     = w * (0.45 + Math.random() * 0.35)
+    const top   = Math.random() * 88
+    const left  = -10 + Math.random() * 110
+    const dur   = 18 + Math.random() * 22
+    const delay = -(Math.random() * 20)
+    const blur  = 18 + Math.random() * 28
+    const op    = 0.18 + Math.random() * 0.22
+    const drift = (Math.random() > 0.5 ? 1 : -1) * (15 + Math.random() * 30)
+    const bob   = (Math.random() > 0.5 ? 1 : -1) * (3 + Math.random() * 8)
+    puff.style.cssText = [
+      `width:${w.toFixed(0)}px`, `height:${h.toFixed(0)}px`,
+      `top:${top.toFixed(1)}%`, `left:${left.toFixed(1)}vw`,
+      `filter:blur(${blur.toFixed(0)}px)`, `opacity:${op.toFixed(2)}`,
+      `--drift:${drift.toFixed(1)}vw`, `--bob:${bob.toFixed(1)}vh`,
+      `animation-duration:${dur.toFixed(1)}s`,
+      `animation-delay:${delay.toFixed(1)}s`,
+    ].join(';')
+    container.appendChild(puff)
+  }
+}
+
 export default function Chapter5({ onComplete }: Props) {
   const onCompleteRef = useRef(onComplete)
   onCompleteRef.current = onComplete
 
-  const rootRef   = useRef<HTMLDivElement>(null)
-  const rainRef   = useRef<HTMLDivElement>(null)
-  const flashRef  = useRef<HTMLDivElement>(null)
-  const scrollRef = useRef<HTMLDivElement>(null)
+  const rootRef      = useRef<HTMLDivElement>(null)
+  const rainRef      = useRef<HTMLDivElement>(null)
+  const fogPuffsRef  = useRef<HTMLDivElement>(null)
+  const flashRef     = useRef<HTMLDivElement>(null)
+  const scrollRef    = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!rootRef.current || !rainRef.current || !flashRef.current) return
-    const root  = rootRef.current
-    const rain  = rainRef.current
-    const flash = flashRef.current
+    if (!rootRef.current || !rainRef.current || !fogPuffsRef.current || !flashRef.current) return
+    const root      = rootRef.current
+    const rain      = rainRef.current
+    const fogPuffs  = fogPuffsRef.current
+    const flash     = flashRef.current
 
     /* start M1 rain */
     spawnRain(rain, 80, 1.0, 1.4, 0.4, 0.7, 20)
@@ -111,6 +140,7 @@ export default function Chapter5({ onComplete }: Props) {
     function activateM2() {
       root.classList.add('ch5-m2')
       spawnRain(rain, 30, 2.2, 2.8, 0.2, 0.35, 35)
+      spawnFogPuffs(fogPuffs)
       root.querySelectorAll<HTMLElement>('.ch5-beat-m2').forEach(b => obs2.observe(b))
     }
 
@@ -134,6 +164,7 @@ export default function Chapter5({ onComplete }: Props) {
 
     return () => {
       rain.innerHTML = ''
+      fogPuffs.innerHTML = ''
       obs1.disconnect()
       obs2.disconnect()
     }
@@ -144,6 +175,7 @@ export default function Chapter5({ onComplete }: Props) {
       <div className="ch5-bg" />
       <div className="ch5-rain" ref={rainRef} />
       <div className="ch5-fog" />
+      <div className="ch5-fog-puffs" ref={fogPuffsRef} />
       <div className="ch5-flash" ref={flashRef} />
       <div className="ch5-scroll" ref={scrollRef}>
         <div className="ch5-sp" />
