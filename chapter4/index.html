@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 4 — The Fun Part</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: auto; }
+body {
+  font-family: 'Poppins', sans-serif;
+  color: #FAF7F2;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* ── Background gradient engine ── */
+.bg-wash {
+  position: fixed; inset: 0; z-index: 0;
+  transition: background 2.2s ease-in-out;
+  background: linear-gradient(180deg, #1A1F3A 0%, #2A1F2E 60%, #1A1520 100%);
+}
+body[data-zone="1"] .bg-wash { background: linear-gradient(180deg, #1E2440 0%, #2E2444 60%, #1A1828 100%); }
+body[data-zone="2"] .bg-wash { background: linear-gradient(160deg, #1A1C30 0%, #232040 60%, #141220 100%); }
+body[data-zone="3"] .bg-wash { background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(255,160,50,0.14) 0%, transparent 70%), linear-gradient(180deg, #1A1828 0%, #1E1520 100%); }
+body[data-zone="4"] .bg-wash { background: linear-gradient(160deg, #FFF3E0 0%, #FFE4C8 50%, #FFCCB0 100%); }
+body[data-zone="5"] .bg-wash { background: linear-gradient(160deg, #FFBFA0 0%, #FFD3B6 50%, #FFB880 100%); }
+body[data-zone="6"] .bg-wash { background: linear-gradient(160deg, #FFD3B6 0%, #F4EEFF 50%, #FFD3B6 100%); }
+
+/* ── Background image overlays ── */
+.bg-img {
+  position: fixed; inset: 0; z-index: 0;
+  background-size: cover; background-position: center;
+  opacity: 0; transition: opacity 1.8s ease-in-out;
+  pointer-events: none;
+}
+.bg-img.on { opacity: 1; }
+
+/* ── Phone glow ── */
+.phone-glow {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  background: radial-gradient(ellipse 36% 28% at 50% 62%, rgba(255,195,100,0.18) 0%, transparent 70%);
+  opacity: 0; transition: opacity 1.2s ease;
+  animation: glowPulse 4s ease-in-out infinite;
+}
+.phone-glow.on { opacity: 1; }
+@keyframes glowPulse {
+  0%,100% { transform: scale(1);    opacity: var(--go,0); }
+  50%      { transform: scale(1.06); opacity: calc(var(--go,0) * 1.6); }
+}
+
+/* ── Doodle layer ── */
+.doodle-layer { position: fixed; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
+.dk { position: absolute; opacity: 0; transition: opacity 1.5s ease; font-style: normal; }
+.dk.on { opacity: 1; }
+.dk-arr  { top:8%;  left:12%;  font-size:11px; color:rgba(255,179,71,.22); animation: dkA 7s ease-in-out infinite alternate; }
+.dk-sp   { top:14%; right:9%;  font-size:17px; color:rgba(180,160,230,.25); animation: dkB 5s ease-in-out infinite; }
+.dk-leaf { top:55%; right:7%;  font-size:19px; color:rgba(160,200,130,.22); animation: dkC 9s ease-in-out infinite alternate; }
+.dk-ht   { top:72%; left:7%;   font-size:15px; color:rgba(240,180,180,.2);  animation: dkD 6s ease-in-out infinite alternate; }
+.dk-rm   { top:40%; right:5%;  font-size:20px; color:rgba(255,180,100,.2);  animation: dkE 8s ease-in-out infinite alternate; }
+@keyframes dkA { from { transform:translate(0,0) }       to { transform:translate(-6px,-5px) } }
+@keyframes dkB { 0%,100%{transform:scale(.9);opacity:.2} 50%{transform:scale(1.05);opacity:.45} }
+@keyframes dkC { from { transform:translateY(0)rotate(0)} to { transform:translateY(-10px)rotate(8deg)} }
+@keyframes dkD { from { transform:translateY(0)rotate(-5deg)} to { transform:translateY(-14px)rotate(3deg)} }
+@keyframes dkE { from { transform:translateY(0)} to { transform:translateY(-8px)} }
+
+/* ── Scroll content ── */
+.scroll-content {
+  position: relative; z-index: 2;
+  max-width: 620px; margin: 0 auto; padding: 0 28px 30vh;
+}
+
+/* ── Beat reveal ── */
+.beat {
+  padding: 9vh 0; text-align: center;
+  opacity: 0; transform: translateY(24px);
+  transition: opacity .85s cubic-bezier(.22,.61,.36,1), transform .85s cubic-bezier(.22,.61,.36,1);
+}
+.beat.on { opacity: 1; transform: none; }
+/* Delayed lines within a beat */
+[data-d] { opacity: 0; transform: translateY(14px); transition: opacity .75s cubic-bezier(.22,.61,.36,1), transform .75s cubic-bezier(.22,.61,.36,1); }
+[data-d].on { opacity: 1; transform: none; }
+
+/* spacers */
+.sp { height: 22vh; }
+.sp-sm { height: 12vh; }
+
+/* ── Typography ── */
+.t-main  { font-size:clamp(20px,2.6vw,30px); font-weight:600; line-height:1.55; }
+.t-line  { font-size:clamp(18px,2.2vw,26px); font-weight:400; line-height:1.65; }
+.t-aside { font-size:clamp(14px,1.7vw,19px); font-weight:400; font-style:italic; line-height:1.7; }
+.t-tiny  { font-size:clamp(13px,1.5vw,16px); font-style:italic; }
+.t-med   { font-size:clamp(18px,2.2vw,26px); font-weight:500; line-height:1.6; }
+.t-shelt { font-size:clamp(22px,2.9vw,36px); font-weight:600; line-height:1.5; letter-spacing:.01em; }
+.t-emoji { font-size:clamp(36px,5.5vw,60px); display:block; margin-bottom:6px; }
+.t-laugh { font-size:clamp(34px,4.2vw,54px); font-weight:700; color:#D4756B; }
+.t-smile { font-size:clamp(22px,2.8vw,34px); font-weight:500; }
+.t-coddl { font-size:clamp(20px,2.4vw,30px); font-weight:400; font-style:italic; }
+.t-eyes  { font-size:clamp(18px,2.2vw,26px); font-weight:400; color:#9A9098; line-height:1.7; }
+.t-small { font-size:clamp(15px,1.8vw,20px); }
+
+/* Light scene text (Scene B onward) */
+.lt { color:#3A2420 !important; }
+body[data-zone="4"] .lt,
+body[data-zone="5"] .lt { color:#3A2420 !important; }
+
+/* ── Chat bubbles ── */
+.chat-wrap { display:flex; flex-direction:column; gap:14px; }
+.bbl {
+  display:inline-block; padding:11px 20px; border-radius:22px;
+  font-size:clamp(18px,2.2vw,26px); font-weight:500; max-width:72%;
+  border:1.5px solid rgba(255,255,255,.22); background:rgba(255,255,255,.07);
+  backdrop-filter:blur(6px);
+  opacity:0; animation:none;
+}
+.bbl-l { align-self:flex-start; }
+.bbl-r { align-self:flex-end; }
+.beat.on .bbl-l { animation:bbFromL .7s ease-out forwards; }
+.beat.on .bbl-r { animation:bbFromR .7s ease-out .2s forwards; }
+@keyframes bbFromL { from{opacity:0;transform:translateX(-28px)} to{opacity:1;transform:none} }
+@keyframes bbFromR { from{opacity:0;transform:translateX(28px)}  to{opacity:1;transform:none} }
+
+/* ── Stars window widget ── */
+.stars-win {
+  width:110px; height:72px; margin:24px auto 0;
+  border:1.5px solid rgba(255,255,255,.14); border-radius:4px;
+  background:#080B18; position:relative; overflow:hidden;
+}
+.star-dot {
+  position:absolute; border-radius:50%; background:#fff;
+  animation:twinkle var(--tw,3s) ease-in-out infinite;
+}
+@keyframes twinkle { 0%,100%{opacity:.25} 50%{opacity:1} }
+
+/* ── Leaves section ── */
+.leaves-box {
+  border-radius:14px; overflow:hidden;
+  padding:44px 24px; margin:0 -4px;
+  position:relative;
+  background:linear-gradient(160deg,#0C1A0E 0%,#182814 60%,#0A1008 100%);
+}
+.leaves-box::before {
+  content:''; position:absolute; inset:0;
+  background-image:url('backgrounds/bg_tree_path.png');
+  background-size:cover; background-position:center; opacity:.65;
+}
+.leaves-box > * { position:relative; z-index:1; }
+.leaf-float { font-size:38px; display:block; margin:0 auto 18px; animation:leafFloat 3.2s ease-in-out infinite; }
+@keyframes leafFloat { 0%,100%{transform:rotate(-4deg)translateY(0)} 50%{transform:rotate(5deg)translateY(-8px)} }
+
+/* ── Ritual shelter box ── */
+.shelter-box {
+  padding:64px 24px; margin:0 -4px; border-radius:14px;
+  position:relative; overflow:hidden;
+  background:linear-gradient(160deg,#0E0C18 0%,#1A1428 100%);
+}
+.shelter-box::before {
+  content:''; position:absolute; inset:0;
+  background-image:url('backgrounds/bg_shelter.png');
+  background-size:cover; background-position:center; opacity:.55;
+}
+.shelter-box::after {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(ellipse 60% 50% at 50% 50%, rgba(255,155,40,.14) 0%, transparent 70%);
+}
+.shelter-box > * { position:relative; z-index:1; }
+
+/* ── Food table ── */
+.food-table {
+  border-radius:14px; overflow:hidden; padding:32px 20px;
+  margin:0 -4px; position:relative;
+  background:linear-gradient(160deg,#FFF8EE 0%,#FFE8C8 100%);
+  display:flex; flex-wrap:wrap; gap:14px; justify-content:center; align-items:flex-end;
+}
+.food-table::before {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(160deg,rgba(255,240,210,.6) 0%,rgba(255,210,160,.4) 100%);
+}
+.food-em {
+  position:relative; z-index:1; font-size:52px;
+  opacity:0; transform:scale(.72) translateY(10px);
+  transition:opacity .6s ease-out, transform .6s ease-out;
+  filter:drop-shadow(0 3px 8px rgba(0,0,0,.15));
+}
+.beat.on .food-em                    { opacity:1; transform:none; }
+.beat.on .food-em:nth-child(2)       { transition-delay:.15s; }
+.beat.on .food-em:nth-child(3)       { transition-delay:.30s; }
+.beat.on .food-em:nth-child(4)       { transition-delay:.45s; }
+
+/* ── Arrows 👉👈 ── */
+.arrow-pair { display:flex; gap:22px; justify-content:center; font-size:26px; margin-bottom:14px; color:rgba(255,179,71,.9); }
+.arr-l,.arr-r { animation-play-state:paused; }
+.arr-l { animation:arrL 1.60s ease-in-out infinite; }
+.arr-r { animation:arrR 1.85s ease-in-out infinite; }
+.beat.on .arr-l,.beat.on .arr-r { animation-play-state:running; }
+@keyframes arrL { 0%,100%{transform:translateX(0)rotate(-4deg);opacity:.6} 35%{transform:translateX(+8px)rotate(-1deg);opacity:1} }
+@keyframes arrR { 0%,100%{transform:translateX(0)rotate(4deg);opacity:.6}  35%{transform:translateX(-8px)rotate(1deg);opacity:1} }
+
+/* ── You laughed bloom ── */
+@keyframes laughBloom {
+  0%   { opacity:0; transform:scale(.88) translateY(16px); letter-spacing:-.02em; }
+  55%  { opacity:1; transform:scale(1.04) translateY(-3px); letter-spacing:.05em; }
+  75%  {            transform:scale(1.01) translateY(-1px); letter-spacing:.025em; }
+  100% { opacity:1; transform:scale(1) translateY(0); letter-spacing:.01em; }
+}
+.beat.on .t-laugh { animation:laughBloom 1.1s cubic-bezier(.22,.61,.36,1) forwards; }
+
+/* ── Laugh burst bg ── */
+.laugh-bg {
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  width:280px; height:280px; border-radius:50%;
+  background:radial-gradient(ellipse 70% 70% at 50% 50%, rgba(212,117,107,.2) 0%, rgba(255,190,160,.08) 50%, transparent 80%);
+  opacity:0; transition:opacity .9s .3s ease; pointer-events:none;
+}
+.beat.on .laugh-bg { opacity:1; }
+.beat-c { position:relative; }
+
+/* ── Eyes motif ── */
+.eyes-img {
+  display:block; width:160px; height:80px; margin:0 auto 18px;
+  background-image:url('effects/eyes_spark_motif.png');
+  background-size:contain; background-repeat:no-repeat; background-position:center;
+  opacity:0; transition:opacity 1.2s ease;
+  animation:eyeBreathe 3.2s ease-in-out infinite; animation-play-state:paused;
+}
+.beat.on .eyes-img { opacity:.85; animation-play-state:running; }
+/* CSS fallback when image missing */
+.eyes-fallback {
+  display:block; text-align:center; font-size:28px;
+  letter-spacing:16px; margin:0 auto 18px;
+  opacity:0; transition:opacity 1.2s ease;
+}
+.beat.on .eyes-fallback { opacity:.7; }
+@keyframes eyeBreathe { 0%,100%{transform:scale(1)} 50%{transform:scale(1.02)} }
+
+/* ── Spark word ── */
+.spark-w { transition:color .8s ease, text-shadow .8s ease; }
+.beat.on .spark-w { color:#FFB347; text-shadow:0 0 14px rgba(255,179,71,.5); }
+
+/* ── Ambient sparkles ── */
+.amb { position:absolute; pointer-events:none; opacity:0; transition:opacity .8s .6s ease; animation:ambTwinkle var(--at,2.4s) ease-in-out infinite; }
+.beat.on .amb { opacity:1; }
+.amb-1 { top:-14px; right:18px; font-size:11px; color:#E6E6FA; --at:2.4s; }
+.amb-2 { bottom:-10px; left:28px; font-size:9px;  color:#FFD3B6; --at:3.1s; }
+@keyframes ambTwinkle { 0%,100%{opacity:.15;transform:scale(.8)} 50%{opacity:.65;transform:scale(1.1)} }
+
+/* ── Sparkle particles (JS) ── */
+@keyframes sparkleFly {
+  0%   { opacity:0; transform:translate(0,0) scale(.2) rotate(0deg); }
+  25%  { opacity:1; transform:translate(var(--sx),var(--sy)) scale(1.15) rotate(var(--sr)); }
+  70%  { opacity:.7; }
+  100% { opacity:0; transform:translate(var(--sx2),var(--sy2)) scale(.3) rotate(var(--sr2)); }
+}
+
+/* ── Warm glow overlay ── */
+.warm-glow {
+  position:fixed; inset:0; z-index:1; pointer-events:none;
+  background:radial-gradient(ellipse 80% 60% at 50% 50%, rgba(255,160,80,.22) 0%, transparent 70%);
+  background-image:url('effects/warm_glow_soft.png');
+  background-size:cover;
+  opacity:0; transition:opacity 1.5s ease;
+}
+.warm-glow.on { opacity:.28; }
+
+/* ── Video backgrounds ── */
+.bg-video {
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  width:100%; height:100%; object-fit:cover;
+  opacity:0; transition:opacity 1.8s ease-in-out;
+}
+.bg-video.on { opacity:1; }
+</style>
+</head>
+
+<body data-zone="0">
+
+<!-- Fixed layers -->
+<div class="bg-wash"></div>
+<video class="bg-video" id="bi-night" autoplay muted loop playsinline>
+  <source src="backgrounds/bg_night_room.mp4" type="video/mp4">
+</video>
+<video class="bg-video" id="bi-tree" autoplay muted loop playsinline>
+  <source src="backgrounds/bg_tree_path.mp4" type="video/mp4">
+</video>
+<video class="bg-video" id="bi-shelter" autoplay muted loop playsinline>
+  <source src="backgrounds/bg_shelter.mp4" type="video/mp4">
+</video>
+<video class="bg-video" id="bi-food" autoplay muted loop playsinline>
+  <source src="backgrounds/bg_restaurant_table.mp4" type="video/mp4">
+</video>
+<div class="phone-glow" id="phone-glow" style="--go:1"></div>
+<div class="warm-glow"  id="warm-glow"></div>
+
+<!-- Ambient doodles -->
+<div class="doodle-layer">
+  <span class="dk dk-arr">→ ←</span>
+  <span class="dk dk-sp">✦</span>
+  <span class="dk dk-leaf">🍃</span>
+  <span class="dk dk-ht" id="dk-heart">♡</span>
+  <span class="dk dk-rm">🍜</span>
+</div>
+
+<main class="scroll-content" id="sc">
+
+  <div style="height:48vh"></div>
+
+  <!-- ═══ SCENE A — LATE NIGHT ═══ -->
+
+  <div class="beat" id="b1">
+    <p class="t-main">We started simple.</p>
+  </div>
+
+  <div class="beat" id="b2">
+    <div class="chat-wrap">
+      <div class="bbl bbl-l">Jokes.</div>
+      <div class="bbl bbl-r">Teasing.</div>
+    </div>
+  </div>
+
+  <div class="beat" id="b3">
+    <p class="t-aside">A suspicious amount of jokes.</p>
+  </div>
+
+  <div class="sp"></div>
+
+  <div class="beat" id="b4">
+    <p class="t-main">There were nights that just didn't end.</p>
+    <div class="stars-win" id="stars-win">
+      <div class="star-dot" style="width:2px;height:2px;top:20%;left:24%;--tw:2.8s"></div>
+      <div class="star-dot" style="width:1.5px;height:1.5px;top:36%;left:54%;--tw:3.4s"></div>
+      <div class="star-dot" style="width:2px;height:2px;top:58%;left:40%;--tw:2.1s"></div>
+      <div class="star-dot" style="width:1px;height:1px;top:16%;left:74%;--tw:4.0s"></div>
+      <div class="star-dot" style="width:2px;height:2px;top:72%;left:80%;--tw:3.2s"></div>
+      <div class="star-dot" style="width:1.5px;height:1.5px;top:44%;left:16%;--tw:2.6s"></div>
+      <div class="star-dot" style="width:1px;height:1px;top:82%;left:62%;--tw:3.8s"></div>
+      <div class="star-dot" style="width:2px;height:2px;top:26%;left:88%;--tw:2.3s"></div>
+    </div>
+  </div>
+
+  <div class="beat" id="b5">
+    <p class="t-line">Not because of insomnia.</p>
+    <p class="t-line" data-d="400">Because of you.</p>
+  </div>
+
+  <div class="sp"></div>
+
+  <div class="beat" id="b6">
+    <div class="leaves-box">
+      <span class="leaf-float">🍃</span>
+      <p class="t-line">We smelled tree leaves</p>
+      <p class="t-aside" data-d="200">like we were doing something illegal.</p>
+    </div>
+  </div>
+
+  <div class="beat" id="b7">
+    <p class="t-tiny">(We were not.)</p>
+  </div>
+
+  <div class="sp"></div>
+
+  <div class="beat" id="b8">
+    <p class="t-med">The small talks.</p>
+  </div>
+
+  <div class="beat" id="b9">
+    <p class="t-line">The "how was your day"</p>
+    <p class="t-line" data-d="200">that somehow unpacked everything.</p>
+  </div>
+
+  <div class="beat" id="b10">
+    <p class="t-line">The kind that makes a long day</p>
+    <p class="t-line" data-d="250">feel like it was worth it.</p>
+  </div>
+
+  <div class="sp"></div>
+
+  <div class="beat" id="b11">
+    <div class="shelter-box">
+      <p class="t-shelt">You're my little ritual shelter.</p>
+    </div>
+  </div>
+
+  <div class="sp"></div>
+
+  <!-- ═══ SCENE B — THE FOOD DATE ═══ -->
+
+  <div class="beat" id="b12">
+    <div class="food-table">
+      <span class="food-em">🍜</span>
+      <span class="food-em">🍜</span>
+      <span class="food-em">🥟</span>
+      <span class="food-em">🧋</span>
+    </div>
+  </div>
+
+  <div class="beat" id="b13">
+    <div class="arrow-pair">
+      <span class="arr-l">→</span>
+      <span class="arr-r">←</span>
+    </div>
+    <p class="t-emoji lt">👉👈</p>
+    <p class="t-aside lt">(you know what I mean)</p>
+  </div>
+
+  <div class="sp"></div>
+
+  <!-- ═══ SCENE C — THE LAUGH / THE EYES ═══ -->
+
+  <div class="beat beat-c" id="b14">
+    <div class="laugh-bg"></div>
+    <p class="t-laugh">You laughed.</p>
+  </div>
+
+  <div class="beat" id="b15">
+    <p class="t-smile">You smiled.</p>
+  </div>
+
+  <div class="beat" id="b16">
+    <p class="t-coddl">You coddled.</p>
+  </div>
+
+  <div class="sp-sm"></div>
+
+  <div class="beat" id="b17">
+    <p class="t-eyes">And your eyes did that thing…</p>
+  </div>
+
+  <div class="beat beat-c" id="b18" style="position:relative">
+    <div class="eyes-img"></div>
+    <span class="eyes-fallback">✨ ✨</span>
+    <p class="t-line">where they <span class="spark-w">spark</span></p>
+    <p class="t-small t-aside" data-d="250">a little more than necessary.</p>
+    <span class="amb amb-1">✦</span>
+    <span class="amb amb-2">✧</span>
+  </div>
+
+  <div style="height:44vh"></div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+
+/* ── Scroll zone ── */
+const zones = [
+  { id:'b1',  zone:'0', bg:'bi-night',   glow:true  },
+  { id:'b4',  zone:'1', bg:null,         glow:true  },
+  { id:'b6',  zone:'2', bg:'bi-tree',    glow:false },
+  { id:'b8',  zone:'2', bg:null,         glow:false },
+  { id:'b11', zone:'3', bg:'bi-shelter', glow:false },
+  { id:'b12', zone:'4', bg:'bi-food',    glow:false },
+  { id:'b14', zone:'5', bg:null,         glow:false },
+  { id:'b18', zone:'6', bg:null,         glow:false },
+];
+
+function setZone(zone, bgId, glow) {
+  document.body.dataset.zone = zone;
+  document.querySelectorAll('.bg-img, .bg-video').forEach(el => {
+    el.classList.remove('on');
+    if (el.tagName === 'VIDEO') el.pause();
+  });
+  if (bgId) {
+    const el = $(bgId);
+    if (el) {
+      el.classList.add('on');
+      if (el.tagName === 'VIDEO') el.play().catch(() => {});
+    }
+  }
+  const pg = $('phone-glow');
+  glow ? pg.classList.add('on') : pg.classList.remove('on');
+}
+
+/* ── Stars multiply ── */
+function moreStars(win) {
+  const extra = [
+    [1.5,10,45,3.1],[2,50,70,2.5],[1,65,28,4.2],[2,30,10,2.9],
+    [1.5,85,90,3.7],[1,5,60,2.2],[2,55,50,3.5],[1.5,75,35,2.7],
+    [1,92,18,4.4],[2,18,82,2.0],[1.5,42,95,3.3]
+  ];
+  extra.forEach(([w,t,l,tw], i) => {
+    setTimeout(() => {
+      const d = document.createElement('div');
+      d.className = 'star-dot';
+      d.style.cssText = `width:${w}px;height:${w}px;top:${t}%;left:${l}%;--tw:${tw}s;opacity:0;transition:opacity 1s`;
+      win.appendChild(d);
+      requestAnimationFrame(() => requestAnimationFrame(() => d.style.opacity = ''));
+    }, i * 160);
+  });
+}
+
+/* ── Sparkle burst ── */
+function sparkle(el, colors, chars, distMin, distMax) {
+  const rect = el.getBoundingClientRect();
+  const cx = rect.left + rect.width  / 2;
+  const cy = rect.top  + rect.height / 2;
+  chars.forEach((ch, i) => {
+    const s    = document.createElement('span');
+    const ang  = (i / chars.length) * 360 + Math.random() * 28;
+    const dist = distMin + Math.random() * (distMax - distMin);
+    const rad  = ang * Math.PI / 180;
+    s.textContent = ch;
+    s.style.cssText = `
+      position:fixed;left:${cx}px;top:${cy}px;pointer-events:none;z-index:999;
+      font-size:${[10,14,18,14,10,18,12][i] || 12}px;
+      color:${colors[i % colors.length]};
+      --sx:${+(Math.cos(rad)*dist).toFixed(1)}px;
+      --sy:${+(Math.sin(rad)*dist).toFixed(1)}px;
+      --sx2:${+(Math.cos(rad)*dist*1.4).toFixed(1)}px;
+      --sy2:${+(Math.sin(rad)*dist*1.4+10).toFixed(1)}px;
+      --sr:${~~(Math.random()*360)}deg;
+      --sr2:${~~(Math.random()*720)}deg;
+      animation:sparkleFly ${(.9+Math.random()*.5).toFixed(2)}s ${i*75}ms forwards;
+    `;
+    document.body.appendChild(s);
+    s.addEventListener('animationend', () => s.remove());
+  });
+}
+
+/* ── RAF parallax ── */
+let ticking = false;
+window.addEventListener('scroll', () => {
+  if (!ticking) {
+    requestAnimationFrame(() => {
+      $('sc').style.transform = `translateY(${window.scrollY * .04}px)`;
+      ticking = false;
+    });
+    ticking = true;
+  }
+}, { passive: true });
+
+/* ── IntersectionObserver ── */
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    const el = e.target, id = el.id;
+    el.classList.add('on');
+    obs.unobserve(el);
+
+    /* stagger delayed children */
+    el.querySelectorAll('[data-d]').forEach(c =>
+      setTimeout(() => c.classList.add('on'), +c.dataset.d)
+    );
+
+    /* scene transitions */
+    const z = zones.find(z => z.id === id);
+    if (z) setZone(z.zone, z.bg, z.glow);
+
+    /* doodles appear on b1 */
+    if (id === 'b1') {
+      setTimeout(() => {
+        document.querySelectorAll('.dk').forEach((d,i) =>
+          setTimeout(() => d.classList.add('on'), i * 400)
+        );
+      }, 700);
+    }
+
+    /* stars multiply on b4 */
+    if (id === 'b4') setTimeout(() => moreStars($('stars-win')), 900);
+
+    /* heart appears on laugh */
+    if (id === 'b14') {
+      $('dk-heart').classList.add('on');
+      $('warm-glow').classList.add('on');
+      const txt = el.querySelector('.t-laugh');
+      if (txt) setTimeout(() => sparkle(txt,
+        ['#D4756B','#FFD3B6','#FFBFA0','#FFB347'],
+        ['✦','✧','·','✦','✧','·','✦'], 40, 75), 600);
+    }
+
+    /* sparkle burst on eyes beat */
+    if (id === 'b18') {
+      const sw = el.querySelector('.spark-w');
+      if (sw) setTimeout(() => sparkle(sw,
+        ['#FFD3B6','#E6E6FA','#A8D8EA'],
+        ['✦','✧','✦','✧','✦','✧','✦'], 35, 72), 400);
+    }
+  });
+}, { threshold: 0.18, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.beat').forEach(b => obs.observe(b));
+</script>
+</body>
+</html>

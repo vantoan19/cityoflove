@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 2 — How This Even Started</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #F4A7B9;
+      font-family: 'Caveat', cursive;
+      overflow-x: hidden;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ── Letter: full viewport width, image stretches to content ── */
+    .letter {
+      width: 100%;
+      background: url('letter_long.png') center top / 100% 100% no-repeat;
+      /* top padding clears the heart; sides clear the pink border (~4%) */
+      padding: 6vw 5vw 5vw;
+
+      /* entrance: drift up from below */
+      opacity: 0;
+      transform: translateY(32px);
+      animation: letterIn 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) 0.35s forwards;
+    }
+
+    @keyframes letterIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Message blocks ────────────────────────────────────────── */
+    .message {
+      max-width: 680px;      /* keep text comfortably readable */
+      margin: 0 auto;
+      padding: 5vh 0;
+      opacity: 0;
+      transform: translateY(24px);
+      transition:
+        opacity   0.85s cubic-bezier(0.22, 0.61, 0.36, 1),
+        transform 0.85s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    .message.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .message p {
+      font-size: clamp(20px, 2.2vw, 28px);
+      line-height: 1.85;
+      color: #3a2028;
+      text-align: center;
+    }
+
+    .message p.emph {
+      font-size: clamp(22px, 2.5vw, 30px);
+      font-weight: 600;
+    }
+
+    .message p.big {
+      font-size: clamp(24px, 2.8vw, 34px);
+      font-weight: 700;
+    }
+
+    /* ── 👀 flash ─────────────────────────────────────────────── */
+    .eyes {
+      display: inline-block;
+      opacity: 0;
+      animation: eyesPop 2.5s ease forwards;
+      animation-play-state: paused;
+    }
+    .message.visible .eyes { animation-play-state: running; }
+    @keyframes eyesPop {
+      0%   { opacity: 0; transform: scale(0.4); }
+      15%  { opacity: 1; transform: scale(1.2); }
+      45%  { opacity: 1; transform: scale(1); }
+      80%  { opacity: 1; }
+      100% { opacity: 0; transform: scale(0.7); }
+    }
+
+    /* ── "Hey Jude" line ──────────────────────────────────────── */
+    .song-title {
+      font-size: clamp(24px, 2.8vw, 34px) !important;
+      font-weight: 700 !important;
+      color: #b85060 !important;
+      letter-spacing: 0.03em;
+    }
+
+    /* ── Sketch audio player ──────────────────────────────────── */
+    .sketch-player {
+      margin: 20px auto 0;
+      max-width: 320px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border: 1.5px solid #5a3540;
+      border-radius: 3px;
+      background: rgba(253, 250, 245, 0.5);
+      transform: rotate(-0.4deg);
+      box-shadow: 2px 2px 0 rgba(90, 53, 64, 0.2);
+    }
+
+    .sp-note { font-size: 20px; color: #b85060; flex-shrink: 0; line-height: 1; }
+
+    .sp-info { flex: 1; min-width: 0; }
+
+    .sp-label {
+      font-family: 'Caveat', cursive;
+      font-size: 15px;
+      color: #3a2028;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sp-track {
+      position: relative;
+      height: 2px;
+      background: rgba(90, 53, 64, 0.2);
+      margin-top: 7px;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+    .sp-track:hover { background: rgba(90, 53, 64, 0.35); }
+
+    .sp-fill {
+      position: absolute;
+      left: 0; top: 0;
+      height: 100%; width: 0%;
+      background: #b85060;
+      border-radius: 2px;
+      transition: width 0.4s linear;
+    }
+
+    .sp-btn {
+      flex-shrink: 0;
+      width: 30px; height: 30px;
+      border: 1.5px solid #5a3540;
+      border-radius: 50%;
+      background: transparent;
+      color: #b85060;
+      font-size: 11px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      padding-left: 2px;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+    .sp-btn:hover  { background: #b85060; color: #fdfaf5; border-color: #b85060; }
+    .sp-btn:active { transform: scale(0.92); }
+
+    /* ── Typing (step 14) ─────────────────────────────────────── */
+    .cursor {
+      display: inline-block;
+      width: 2px; height: 0.85em;
+      background: #3a2028;
+      margin-left: 3px;
+      vertical-align: middle;
+      animation: blink 0.85s step-end infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    .reply {
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reply.shown { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+<div class="letter" id="letter">
+
+  <div class="message" id="m1">
+    <p>It didn't start with a conversation.</p>
+    <p>It started with curiosity.</p>
+  </div>
+
+  <div class="message" id="m2">
+    <p>We knew each other through a friend.</p>
+    <p>Did a little stalking. <span class="eyes">👀</span></p>
+    <p>Said nothing. Too shy.</p>
+  </div>
+
+  <div class="message" id="m3">
+    <p>Then one day,</p>
+    <p>you appeared near my world.</p>
+  </div>
+
+  <div class="message" id="m4">
+    <p>We saw each other.</p>
+    <p>Just for a moment.</p>
+    <p>From a distance.</p>
+  </div>
+
+  <div class="message" id="m5">
+    <p class="big">And then you left.</p>
+  </div>
+
+  <div class="message" id="m6">
+    <p class="big">That could've been it.</p>
+  </div>
+
+  <div class="message" id="m7">
+    <p>But a week later,</p>
+    <p>I found an excuse:</p>
+    <p class="emph">"Let's have lunch."</p>
+  </div>
+
+  <div class="message" id="m8">
+    <p>You were…</p>
+    <p class="emph">warm. Easy. Bright.</p>
+  </div>
+
+  <div class="message" id="m9">
+    <p>And after that—</p>
+    <p>I couldn't focus on anything.</p>
+  </div>
+
+  <div class="message" id="m10">
+    <p>Because texting you</p>
+    <p>felt like the hardest thing in the world.</p>
+  </div>
+
+  <div class="message" id="m11">
+    <p>Then a song played.</p>
+    <p class="song-title">"Hey Jude…"</p>
+    <div class="sketch-player">
+      <span class="sp-note">♪</span>
+      <div class="sp-info">
+        <div class="sp-label">Hey Jude — The Beatles</div>
+        <div class="sp-track" id="sp-track">
+          <div class="sp-fill" id="sp-fill"></div>
+        </div>
+      </div>
+      <button class="sp-btn" id="sp-btn" title="Play">▶</button>
+    </div>
+    <audio id="audio" preload="none">
+      <source src="hey_jude.mp3" type="audio/mpeg">
+    </audio>
+  </div>
+
+  <div class="message" id="m12">
+    <p>And somehow it said:</p>
+    <p class="emph">You found her.</p>
+    <p class="emph">Now go get her.</p>
+  </div>
+
+  <div class="message" id="m13">
+    <p>So after way too much overthinking—</p>
+    <p>I did something brave.</p>
+  </div>
+
+  <div class="message" id="m14">
+    <p><span id="typed"></span><span class="cursor" id="csr"></span></p>
+    <p class="reply" id="reply">You replied.</p>
+  </div>
+
+</div><!-- /letter -->
+
+<script>
+  /* ── Scroll-reveal ──────────────────────────────────────────── */
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        obs.unobserve(e.target);
+        if (e.target.id === 'm14') startTyping();
+      }
+    });
+  }, { threshold: 0.18, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.message').forEach(m => obs.observe(m));
+
+  /* ── Gentle letter parallax on scroll ───────────────────────── */
+  const letter = document.getElementById('letter');
+  let ticking  = false;
+
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        // Letter drifts ~4% slower than the scroll — barely perceptible but adds physical weight
+        letter.style.transform = `translateY(${window.scrollY * 0.04}px)`;
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive: true });
+
+  /* ── Audio player ───────────────────────────────────────────── */
+  const audio   = document.getElementById('audio');
+  const spBtn   = document.getElementById('sp-btn');
+  const spFill  = document.getElementById('sp-fill');
+  const spTrack = document.getElementById('sp-track');
+  let playing   = false;
+
+  spBtn.addEventListener('click', () => {
+    if (playing) {
+      audio.pause();
+      spBtn.textContent = '▶';
+      playing = false;
+    } else {
+      audio.play().catch(() => {});
+      spBtn.textContent = '⏸';
+      playing = true;
+    }
+  });
+
+  audio.addEventListener('timeupdate', () => {
+    if (audio.duration)
+      spFill.style.width = (audio.currentTime / audio.duration * 100) + '%';
+  });
+
+  audio.addEventListener('ended', () => {
+    playing = false;
+    spBtn.textContent = '▶';
+    spFill.style.width = '0%';
+  });
+
+  spTrack.addEventListener('click', e => {
+    if (!audio.duration) return;
+    const r = spTrack.getBoundingClientRect();
+    audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
+  });
+
+  /* ── Typing animation ───────────────────────────────────────── */
+  function startTyping() {
+    const text   = 'I texted you.';
+    const typed  = document.getElementById('typed');
+    const cursor = document.getElementById('csr');
+    const reply  = document.getElementById('reply');
+    let i = 0;
+    typed.textContent = '';
+
+    const tick = () => {
+      if (i < text.length) {
+        typed.textContent += text[i++];
+        setTimeout(tick, 55 + Math.random() * 65);
+      } else {
+        setTimeout(() => {
+          cursor.style.display = 'none';
+          reply.classList.add('shown');
+        }, 900);
+      }
+    };
+    setTimeout(tick, 500);
+  }
+</script>
+</body>
+</html>

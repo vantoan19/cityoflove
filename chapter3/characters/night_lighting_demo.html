@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Night Lighting — CSS Approach Demo</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0d0a1a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+    padding: 40px 20px;
+    font-family: sans-serif;
+    color: #ccc;
+  }
+
+  h2 { font-size: 14px; letter-spacing: 2px; text-transform: uppercase; opacity: 0.5; }
+
+  .scene {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 80px;
+    padding: 40px;
+    border-radius: 12px;
+  }
+
+  /* ─── BASE: no lighting ─────────────────────────────────── */
+  .scene--raw { background: #1a1530; }
+
+  /* ─── WITH CSS NIGHT LIGHTING ───────────────────────────── */
+  .scene--night { background: #1a1530; }
+
+  /* Character wrapper — this is all that's needed in the real site */
+  .char {
+    position: relative;
+    width: 200px;
+  }
+  .char img {
+    width: 100%;
+    display: block;
+  }
+
+  /*
+   * Night lighting overlay technique:
+   * A pseudo-element sits over the sprite with mix-blend-mode: multiply.
+   * A linear gradient goes from cool blue (moonlight, upper-left)
+   * to transparent in the middle to warm amber (city glow, right).
+   *
+   * multiply darkens wherever the gradient has color,
+   * leaving the sprite's own colors intact in the bright midtones
+   * while adding the atmospheric tint in the shadows/edges.
+   */
+  .char--night::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 4px;
+    pointer-events: none;
+
+    /* warm amber from right, cool blue from left */
+    background: linear-gradient(
+      105deg,
+      rgba(60, 80, 180, 0.55) 0%,
+      rgba(60, 80, 180, 0.15) 35%,
+      transparent 50%,
+      rgba(210, 130, 30, 0.20) 70%,
+      rgba(210, 130, 30, 0.50) 100%
+    );
+    mix-blend-mode: multiply;
+  }
+
+  /*
+   * Layer 2: a subtle overall night darkening + slight blue cast
+   * using a ::before pseudo-element with mix-blend-mode: color
+   * to shift the whole sprite slightly cooler/darker.
+   */
+  .char--night::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: rgba(20, 30, 80, 0.18);
+    mix-blend-mode: multiply;
+    border-radius: 4px;
+  }
+
+  /* Nick-specific: city glow comes from his RIGHT (he's on the left) */
+  .char--nick.char--night::after {
+    background: linear-gradient(
+      100deg,
+      rgba(40, 60, 160, 0.50) 0%,
+      rgba(40, 60, 160, 0.12) 30%,
+      transparent 48%,
+      rgba(200, 120, 20, 0.22) 65%,
+      rgba(200, 120, 20, 0.55) 100%
+    );
+  }
+
+  /* Judy-specific: city glow comes from her LEFT (she's on the right, city is to her left) */
+  .char--judy.char--night::after {
+    background: linear-gradient(
+      100deg,
+      rgba(200, 120, 20, 0.55) 0%,
+      rgba(200, 120, 20, 0.22) 35%,
+      transparent 52%,
+      rgba(40, 60, 160, 0.12) 70%,
+      rgba(40, 60, 160, 0.50) 100%
+    );
+  }
+
+  /* ─── TOGGLE BUTTON ─────────────────────────────────────── */
+  .toggle {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  button {
+    padding: 8px 20px;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background: #222;
+    color: #ccc;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.2s;
+  }
+  button.active { background: #3a3060; border-color: #7060c0; color: #fff; }
+
+  .label {
+    font-size: 11px;
+    text-align: center;
+    opacity: 0.4;
+    margin-top: 6px;
+  }
+
+  /* ─── SIDE BY SIDE COMPARISON ───────────────────────────── */
+  .comparison {
+    display: flex;
+    gap: 60px;
+    align-items: flex-end;
+  }
+  .comparison-col { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .comparison-col h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.4; }
+</style>
+</head>
+<body>
+
+<h2>Night Lighting — CSS Overlay Demo</h2>
+
+<!-- Side-by-side comparison -->
+<div class="comparison">
+
+  <div class="comparison-col">
+    <h3>Raw sprites (no CSS)</h3>
+    <div class="scene scene--raw">
+      <div class="char char--nick">
+        <img src="nick_date_base.png" alt="Nick">
+        <div class="label">Nick</div>
+      </div>
+      <div class="char char--judy">
+        <img src="judy_date_base.png" alt="Judy">
+        <div class="label">Judy</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="comparison-col">
+    <h3>With CSS night lighting</h3>
+    <div class="scene scene--night">
+      <div class="char char--nick char--night">
+        <img src="nick_date_base.png" alt="Nick">
+        <div class="label">Nick</div>
+      </div>
+      <div class="char char--judy char--night">
+        <img src="judy_date_base.png" alt="Judy">
+        <div class="label">Judy</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Code snippet -->
+<div style="max-width:640px; width:100%; background:#111; border-radius:8px; padding:20px;">
+  <div style="font-size:11px; opacity:0.4; margin-bottom:12px; text-transform:uppercase; letter-spacing:1px;">The CSS (applied per character wrapper)</div>
+  <pre style="font-size:12px; line-height:1.7; color:#9cf; overflow-x:auto;">.char--night::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  /* amber from right (city), blue from left (moon) */
+  background: linear-gradient(
+    100deg,
+    rgba(40, 60, 160, 0.50)  0%,   /* cool blue — moon */
+    transparent              48%,
+    rgba(200, 120, 20, 0.55) 100%  /* warm amber — city */
+  );
+  mix-blend-mode: multiply;
+}
+
+/* flip gradient direction for Judy (city is on her left) */
+.char--judy.char--night::after {
+  background: linear-gradient(
+    100deg,
+    rgba(200, 120, 20, 0.55) 0%,   /* warm amber */
+    transparent              52%,
+    rgba(40, 60, 160, 0.50)  100%  /* cool blue */
+  );
+}</pre>
+</div>
+
+<div style="font-size:12px; opacity:0.5; max-width:560px; text-align:center; line-height:1.8;">
+  The sprites stay at their original colors. The overlay is a single CSS pseudo-element with
+  <code>mix-blend-mode: multiply</code> — easy to tune, works identically on every pose,
+  and costs zero extra image assets.
+</div>
+
+</body>
+</html>

@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sprite Animation Player</title>
+<style>
+  body {
+    background: #1a1a2e;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    font-family: monospace;
+    color: #eee;
+  }
+  #canvas {
+    border: 2px solid #444;
+    background: #111;
+  }
+  .controls {
+    margin-top: 16px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  button {
+    background: #2a2a4a;
+    color: #eee;
+    border: 1px solid #555;
+    padding: 6px 14px;
+    cursor: pointer;
+    font-family: monospace;
+    font-size: 14px;
+  }
+  button:hover { background: #3a3a6a; }
+  label { font-size: 13px; }
+  #fps-val { width: 30px; display: inline-block; text-align: right; }
+  #frame-info { margin-top: 8px; font-size: 12px; color: #888; }
+
+  /* Scene mode: canvas fills the viewport; controls overlay on top. */
+  body.scene-mode { overflow: hidden; }
+  body.scene-mode #canvas {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    border: none;
+  }
+  body.scene-mode #frame-info,
+  body.scene-mode .controls {
+    position: fixed;
+    z-index: 10;
+    margin: 0;
+    background: rgba(26, 26, 46, 0.8);
+    padding: 6px 10px;
+    border-radius: 6px;
+    backdrop-filter: blur(4px);
+  }
+  body.scene-mode #frame-info { top: 10px; left: 10px; }
+  body.scene-mode .controls:nth-of-type(1) { top: 10px; right: 10px; }
+  body.scene-mode .controls:nth-of-type(2) { bottom: 10px; left: 50%; transform: translateX(-50%); }
+</style>
+</head>
+<body>
+
+<canvas id="canvas" width="800" height="800"></canvas>
+<div id="frame-info">frame – / –</div>
+
+<div class="controls">
+  <label>Animation:
+    <select id="anim-select"></select>
+  </label>
+</div>
+
+<div class="controls">
+  <button id="btn-play">⏸ Pause</button>
+  <button id="btn-prev">◀ Prev</button>
+  <button id="btn-next">Next ▶</button>
+  <label>FPS: <span id="fps-val">8</span>
+    <input id="fps-slider" type="range" min="1" max="30" value="8">
+  </label>
+</div>
+
+<script>
+  const MAX_FRAMES = 30;
+
+  // A layer spec is either { folder, prefix? } (probe framesN.png) or { static: path } (single image).
+  const SCENES = {
+    ch1_day_scene: [
+      { folder: 'chapter1/animations/backgrounds/sky' },
+      { folder: 'chapter1/animations/backgrounds/mountains' },
+      { folder: 'chapter1/animations/backgrounds/city_buildings' },
+      { folder: 'chapter1/animations/backgrounds/foreground_bushes' },
+    ],
+    ch1_day_scene_hq: [
+      { folder: 'backgrounds_high/sky' },
+      { folder: 'chapter1/animations/backgrounds/mountains' },
+      { folder: 'backgrounds_high/city_buildings' },
+      { folder: 'backgrounds_high/foreground_bushes' },
+    ],
+    ch3_starry_city: [
+      { folder: 'chapter3/backgrounds/sky_overlays' },
+      { folder: 'chapter3/backgrounds/city_night/frames' },
+    ],
+  };
+
+  // Love letter interactive scene state
+  let letterState = 'idle'; // 'idle' | 'opening' | 'done' | 'transition' | 'ch1'
+  let letterIdleImages = [];
+  let letterOpeningImages = [];
+  let letterIdleTick = 0;
+  let letterOpeningFrame = 0;
+  const LETTER_IDLE_FPS = 1.25;   // 800ms per frame
+  const LETTER_OPEN_FPS = 8;      // ~120ms per frame
+
+  // Transition state
+  let transitionStart = null;
+  let ch1TransitionLayers = [];  // [{images}] sky, city, bushes
+  let ch1TransitionFox = [];
+  const ZOOM_DURATION = 900;     // ms — letter zooms to fill screen
+  const FADE_DURATION = 1500;    // ms — ch1 layers fade in
+  // Normalized pivot point of the white letter paper in frame7 (16:9 image coords)
+  const LETTER_CX = 0.50;
+  const LETTER_CY = 0.36;
+
+  const ITEMS = [
+    { group: 'Scene', label: 'ch1_day_scene',    type: 'scene', scene: 'ch1_day_scene' },
+    { group: 'Scene', label: 'ch1_day_scene_hq', type: 'scene', scene: 'ch1_day_scene_hq' },
+    { group: 'Scene', label: 'ch3_starry_city',  type: 'scene', scene: 'ch3_starry_city' },
+    { group: 'Love Letter', label: 'loveletter_scene (click to open)', type: 'loveletter' },
+    { group: 'Love Letter', label: 'loveletter_idle',    type: 'anim', folder: 'loveletter/idle' },
+    { group: 'Love Letter', label: 'loveletter_opening', type: 'anim', folder: 'loveletter/opening' },
+    ...[
+      'pose1_neutral_idle', 'pose2_presenting', 'pose3_shrug', 'pose4_pointing_up',
+      'pose5_adjusting_sunglasses', 'pose6_finger_guns', 'pose7_thumbs_up',
+    ].map(p => ({ group: 'Ch1 Fox (Nick)', label: p, type: 'anim', folder: `chapter1/animations/fox/${p}` })),
+    ...[
+      'pose1_neutral_idle', 'pose2_smug', 'pose3_curious_pointing', 'pose4_surprised',
+      'pose5_amused', 'pose6_warm_happy',
+    ].map(p => ({ group: 'Ch1 Bunny (Judy)', label: p, type: 'anim', folder: `chapter1/animations/bunny/${p}` })),
+    ...['sky', 'mountains', 'city_buildings', 'foreground_bushes']
+      .map(p => ({ group: 'Ch1 Backgrounds', label: p, type: 'anim', folder: `chapter1/animations/backgrounds/${p}` })),
+    { group: 'Ch1 Backgrounds HQ', label: 'sky_2k',              type: 'anim', folder: 'backgrounds_high/sky' },
+    { group: 'Ch1 Backgrounds HQ', label: 'city_buildings_2k',   type: 'anim', folder: 'backgrounds_high/city_buildings' },
+    { group: 'Ch1 Backgrounds HQ', label: 'foreground_bushes_2k', type: 'anim', folder: 'backgrounds_high/foreground_bushes' },
+    { group: 'Ch3 Backgrounds', label: 'sky_twinkle', type: 'anim',
+      folder: 'chapter3/backgrounds/sky_overlays' },
+    { group: 'Ch3 Backgrounds', label: 'city_overlays (legacy)', type: 'anim',
+      folder: 'chapter3/backgrounds/city_overlays' },
+    { group: 'Ch3 Backgrounds', label: 'city_night', type: 'anim',
+      folder: 'chapter3/backgrounds/city_night/frames' },
+  ];
+
+  const FOX_POSES = [
+    'pose1_neutral_idle', 'pose2_presenting', 'pose3_shrug', 'pose4_pointing_up',
+    'pose5_adjusting_sunglasses', 'pose6_finger_guns', 'pose7_thumbs_up',
+  ];
+  const BUNNY_POSES = [
+    'pose1_neutral_idle', 'pose2_smug', 'pose3_curious_pointing', 'pose4_surprised',
+    'pose5_amused', 'pose6_warm_happy',
+  ];
+
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const info = document.getElementById('frame-info');
+  const fpsSlider = document.getElementById('fps-slider');
+  const fpsVal = document.getElementById('fps-val');
+  const btnPlay = document.getElementById('btn-play');
+  const animSelect = document.getElementById('anim-select');
+
+  let mode = 'single'; // 'single' | 'parallax'
+  let frames = [];
+  let images = [];
+  let layers = []; // [{ name, images: Image[] }]
+  let foxLayer = null;
+  let bunnyLayer = null;
+  let current = 0;
+  let tick = 0;
+  let playing = true;
+  let fps = 8;
+  let lastTime = 0;
+  let rafId;
+  let loadToken = 0;
+
+  const BOUNDED_SIZE = 800;
+  function applyCanvasSize() {
+    if (mode === 'parallax' || mode === 'loveletter') {
+      document.body.classList.add('scene-mode');
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.round(window.innerWidth * dpr);
+      canvas.height = Math.round(window.innerHeight * dpr);
+    } else {
+      document.body.classList.remove('scene-mode');
+      canvas.width = BOUNDED_SIZE;
+      canvas.height = BOUNDED_SIZE;
+    }
+  }
+  window.addEventListener('resize', () => {
+    if (mode !== 'parallax') return;
+    applyCanvasSize();
+    drawParallax();
+  });
+
+  // Populate selector, grouping ITEMS by their `group` field. Option value = ITEMS index.
+  {
+    const byGroup = new Map();
+    ITEMS.forEach((it, i) => {
+      if (!byGroup.has(it.group)) byGroup.set(it.group, []);
+      byGroup.get(it.group).push({ it, i });
+    });
+    for (const [name, entries] of byGroup) {
+      const og = document.createElement('optgroup');
+      og.label = name;
+      for (const { it, i } of entries) {
+        const opt = document.createElement('option');
+        opt.value = String(i);
+        opt.textContent = it.label;
+        og.appendChild(opt);
+      }
+      animSelect.appendChild(og);
+    }
+  }
+
+  function loadImage(src) {
+    return new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => resolve({ img, ok: true });
+      img.onerror = () => resolve({ img, ok: false });
+      img.src = src;
+    });
+  }
+
+  // Resolves a layer spec → { name, srcs[], images[] }.
+  async function probeLayer(layer) {
+    if (layer.static) {
+      const r = await loadImage(layer.static);
+      return {
+        name: layer.static.split('/').pop(),
+        srcs: r.ok ? [layer.static] : [],
+        images: r.ok ? [r.img] : [],
+      };
+    }
+    const prefix = layer.prefix ?? 'frame';
+    const srcs = Array.from({ length: MAX_FRAMES }, (_, i) => `${layer.folder}/${prefix}${i + 1}.png`);
+    const results = await Promise.all(srcs.map(loadImage));
+    const imgs = [], paths = [];
+    for (let i = 0; i < results.length; i++) {
+      if (!results[i].ok) break;
+      imgs.push(results[i].img);
+      paths.push(srcs[i]);
+    }
+    return { name: layer.folder.split('/').pop(), srcs: paths, images: imgs };
+  }
+
+  async function loadAnimation(item) {
+    const token = ++loadToken;
+    info.textContent = `loading ${item.label}…`;
+    const layer = await probeLayer(item);
+    if (token !== loadToken) return;
+
+    mode = 'single';
+    foxLayer = null;
+    bunnyLayer = null;
+    applyCanvasSize();
+    images = layer.images;
+    frames = layer.srcs;
+    current = 0;
+    if (frames.length === 0) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#444';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#aaa';
+      ctx.textAlign = 'center';
+      ctx.font = '13px monospace';
+      ctx.fillText('no frames found', canvas.width / 2, canvas.height / 2);
+      info.textContent = `0 frames in ${item.folder ?? item.static}`;
+    } else {
+      draw();
+    }
+  }
+
+  async function loadLoveLetter() {
+    const token = ++loadToken;
+    info.textContent = 'loading love letter…';
+    const [idle, opening, sky, city, bushes, fox] = await Promise.all([
+      probeLayer({ folder: 'loveletter/idle' }),
+      probeLayer({ folder: 'loveletter/opening' }),
+      probeLayer({ folder: 'chapter1/animations/backgrounds/sky' }),
+      probeLayer({ folder: 'chapter1/animations/backgrounds/city_buildings' }),
+      probeLayer({ folder: 'chapter1/animations/backgrounds/foreground_bushes' }),
+      probeLayer({ folder: 'chapter1/animations/fox/pose1_neutral_idle' }),
+    ]);
+    if (token !== loadToken) return;
+
+    mode = 'loveletter';
+    letterState = 'idle';
+    letterIdleImages = idle.images;
+    letterOpeningImages = opening.images;
+    letterIdleTick = 0;
+    letterOpeningFrame = 0;
+    transitionStart = null;
+    ch1TransitionLayers = [sky, city, bushes];
+    ch1TransitionFox = fox.images;
+    applyCanvasSize();
+    drawLoveLetter();
+  }
+
+  function drawLoveLetter() {
+    const imgs = letterState === 'opening' || letterState === 'done'
+      ? letterOpeningImages
+      : letterIdleImages;
+    const idx = letterState === 'opening' ? letterOpeningFrame
+               : letterState === 'done'   ? letterOpeningImages.length - 1
+               : letterIdleTick % Math.max(1, letterIdleImages.length);
+    const img = imgs[idx];
+    if (!img || !img.complete || img.naturalWidth === 0) return;
+    const scale = Math.min(canvas.width / img.naturalWidth, canvas.height / img.naturalHeight);
+    const w = img.naturalWidth * scale;
+    const h = img.naturalHeight * scale;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
+    const stateLabel = letterState === 'idle' ? `idle frame ${(letterIdleTick % Math.max(1, letterIdleImages.length)) + 1}/3`
+                     : letterState === 'opening' ? `opening frame ${letterOpeningFrame + 1}/${letterOpeningImages.length}`
+                     : `click to enter Chapter 1 →`;
+    info.textContent = `love letter  —  ${stateLabel}`;
+  }
+
+  function easeInOut(t) {
+    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+  }
+
+  function drawZoomTransition(progress) {
+    const img = letterOpeningImages[letterOpeningImages.length - 1];
+    if (!img || !img.complete || img.naturalWidth === 0) return;
+    const cw = canvas.width, ch = canvas.height;
+    const imgScale = Math.min(cw / img.naturalWidth, ch / img.naturalHeight);
+    const iw = img.naturalWidth * imgScale;
+    const ih = img.naturalHeight * imgScale;
+    const ix = (cw - iw) / 2;
+    const iy = (ch - ih) / 2;
+    // Pivot on the white letter paper center in frame7
+    const px = ix + LETTER_CX * iw;
+    const py = iy + LETTER_CY * ih;
+    const scale = 1 + easeInOut(progress) * 6.0;
+    ctx.clearRect(0, 0, cw, ch);
+    ctx.save();
+    ctx.translate(px, py);
+    ctx.scale(scale, scale);
+    ctx.translate(-px, -py);
+    ctx.drawImage(img, ix, iy, iw, ih);
+    ctx.restore();
+    // White fade-in starts at 55% of zoom, completes at 100%
+    if (progress > 0.55) {
+      const fadeT = (progress - 0.55) / 0.45;
+      ctx.fillStyle = `rgba(255,255,255,${easeInOut(fadeT)})`;
+      ctx.fillRect(0, 0, cw, ch);
+    }
+    info.textContent = `transition — zooming in…`;
+  }
+
+  function drawCh1Reveal(progress) {
+    const cw = canvas.width, ch = canvas.height;
+    // White base fades out as first layer appears
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, cw, ch);
+    // Layer stagger: each layer starts 0.15 apart, takes 0.5 of progress to fully appear
+    const stagger = 0.15, dur = 0.50;
+    ch1TransitionLayers.forEach((layer, i) => {
+      if (!layer.images.length) return;
+      const t = Math.max(0, Math.min(1, (progress - i * stagger) / dur));
+      if (t === 0) return;
+      const img = layer.images[0];
+      if (!img || !img.complete || img.naturalWidth === 0) return;
+      ctx.globalAlpha = easeInOut(t);
+      const s = Math.min(cw / img.naturalWidth, ch / img.naturalHeight);
+      ctx.drawImage(img, (cw - img.naturalWidth * s) / 2, (ch - img.naturalHeight * s) / 2,
+                    img.naturalWidth * s, img.naturalHeight * s);
+      ctx.globalAlpha = 1;
+    });
+    // Fox fades in last
+    if (ch1TransitionFox.length) {
+      const t = Math.max(0, Math.min(1, (progress - 3 * stagger) / dur));
+      if (t > 0) {
+        const img = ch1TransitionFox[0];
+        if (img && img.complete && img.naturalWidth > 0) {
+          ctx.globalAlpha = easeInOut(t);
+          const charH = ch * 0.55;
+          const charW = (img.naturalWidth / img.naturalHeight) * charH;
+          ctx.drawImage(img, cw * 0.02, ch - charH, charW, charH);
+          ctx.globalAlpha = 1;
+        }
+      }
+    }
+    info.textContent = progress >= 1 ? 'Chapter 1 — welcome' : `transition — chapter 1 appearing…`;
+  }
+
+  async function loadScene(sceneId) {
+    const specs = SCENES[sceneId];
+    if (!specs) return;
+    const token = ++loadToken;
+    info.textContent = `loading scene ${sceneId}…`;
+
+    const foxPose   = FOX_POSES[Math.floor(Math.random() * FOX_POSES.length)];
+    const bunnyPose = BUNNY_POSES[Math.floor(Math.random() * BUNNY_POSES.length)];
+
+    const [loaded, fox, bunny] = await Promise.all([
+      Promise.all(specs.map(probeLayer)),
+      probeLayer({ folder: `chapter1/animations/fox/${foxPose}` }),
+      probeLayer({ folder: `chapter1/animations/bunny/${bunnyPose}` }),
+    ]);
+    if (token !== loadToken) return;
+
+    mode = 'parallax';
+    applyCanvasSize();
+    layers = loaded;
+    foxLayer = fox;
+    bunnyLayer = bunny;
+    tick = 0;
+    drawParallax();
+  }
+
+  function drawCharacter(layer, side) {
+    if (!layer || layer.images.length === 0) return;
+    const img = layer.images[tick % layer.images.length];
+    if (!img || !img.complete || img.naturalWidth === 0) return;
+    const charH = canvas.height * 0.55;
+    const charW = (img.naturalWidth / img.naturalHeight) * charH;
+    const y = canvas.height - charH;
+    const x = side === 'left'
+      ? canvas.width * 0.02
+      : canvas.width - charW - canvas.width * 0.02;
+    ctx.drawImage(img, x, y, charW, charH);
+  }
+
+  function drawParallax() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const layer of layers) {
+      if (layer.images.length === 0) continue;
+      const img = layer.images[tick % layer.images.length];
+      if (!img || !img.complete || img.naturalWidth === 0) continue;
+      const scale = Math.min(canvas.width / img.naturalWidth, canvas.height / img.naturalHeight);
+      const w = img.naturalWidth * scale;
+      const h = img.naturalHeight * scale;
+      const x = (canvas.width - w) / 2;
+      const y = (canvas.height - h) / 2;
+      ctx.drawImage(img, x, y, w, h);
+    }
+    drawCharacter(foxLayer, 'left');
+    drawCharacter(bunnyLayer, 'right');
+    const counts = layers.map(l => `${l.name}:${l.images.length}`).join('  ');
+    info.textContent = `parallax tick ${tick}  —  ${counts}`;
+  }
+
+  function draw() {
+    if (frames.length === 0) return;
+    const img = images[current];
+    if (img && img.complete && img.naturalWidth > 0) {
+      const scale = Math.min(canvas.width / img.naturalWidth, canvas.height / img.naturalHeight);
+      const w = img.naturalWidth * scale;
+      const h = img.naturalHeight * scale;
+      const x = (canvas.width - w) / 2;
+      const y = (canvas.height - h) / 2;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, x, y, w, h);
+    }
+    info.textContent = `frame ${current + 1} / ${frames.length}  —  ${frames[current].split('/').pop()}`;
+  }
+
+  function loop(ts) {
+    if (playing) {
+      if (mode === 'single' && frames.length > 0 && ts - lastTime >= 1000 / fps) {
+        current = (current + 1) % frames.length;
+        draw();
+        lastTime = ts;
+      } else if (mode === 'parallax' && layers.length > 0 && ts - lastTime >= 1000 / fps) {
+        tick++;
+        drawParallax();
+        lastTime = ts;
+      } else if (mode === 'loveletter') {
+        if (letterState === 'idle' && ts - lastTime >= 1000 / LETTER_IDLE_FPS) {
+          letterIdleTick++;
+          drawLoveLetter();
+          lastTime = ts;
+        } else if (letterState === 'opening' && ts - lastTime >= 1000 / LETTER_OPEN_FPS) {
+          if (letterOpeningFrame < letterOpeningImages.length - 1) {
+            letterOpeningFrame++;
+            drawLoveLetter();
+          } else {
+            letterState = 'done';
+            drawLoveLetter();
+          }
+          lastTime = ts;
+        } else if (letterState === 'transition') {
+          const elapsed = performance.now() - transitionStart;
+          if (elapsed < ZOOM_DURATION) {
+            drawZoomTransition(elapsed / ZOOM_DURATION);
+          } else {
+            const fadeProgress = Math.min(1, (elapsed - ZOOM_DURATION) / FADE_DURATION);
+            drawCh1Reveal(fadeProgress);
+            if (fadeProgress >= 1) letterState = 'ch1';
+          }
+        }
+        // 'done' and 'ch1' states: no timed updates, only redrawn on interaction
+      }
+    }
+    rafId = requestAnimationFrame(loop);
+  }
+  rafId = requestAnimationFrame(loop);
+
+  btnPlay.addEventListener('click', () => {
+    playing = !playing;
+    btnPlay.textContent = playing ? '⏸ Pause' : '▶ Play';
+  });
+
+  document.getElementById('btn-prev').addEventListener('click', () => {
+    if (mode === 'parallax') {
+      if (layers.length === 0) return;
+      tick = Math.max(0, tick - 1);
+      drawParallax();
+    } else {
+      if (frames.length === 0) return;
+      current = (current - 1 + frames.length) % frames.length;
+      draw();
+    }
+  });
+
+  document.getElementById('btn-next').addEventListener('click', () => {
+    if (mode === 'parallax') {
+      if (layers.length === 0) return;
+      tick++;
+      drawParallax();
+    } else {
+      if (frames.length === 0) return;
+      current = (current + 1) % frames.length;
+      draw();
+    }
+  });
+
+  fpsSlider.addEventListener('input', () => {
+    fps = Number(fpsSlider.value);
+    fpsVal.textContent = fps;
+  });
+
+  function handleSelect(value) {
+    const item = ITEMS[Number(value)];
+    if (!item) return;
+    if (item.type === 'scene') loadScene(item.scene);
+    else if (item.type === 'loveletter') loadLoveLetter();
+    else loadAnimation(item);
+  }
+
+  canvas.addEventListener('click', () => {
+    if (mode !== 'loveletter') return;
+    if (letterState === 'idle') {
+      letterState = 'opening';
+      letterOpeningFrame = 0;
+      lastTime = 0;
+    } else if (letterState === 'done') {
+      letterState = 'transition';
+      transitionStart = performance.now();
+    }
+  });
+
+  // Pointer cursor when the canvas is clickable
+  function updateCursor() {
+    const clickable = mode === 'loveletter' && (letterState === 'idle' || letterState === 'done');
+    canvas.style.cursor = clickable ? 'pointer' : 'default';
+    requestAnimationFrame(updateCursor);
+  }
+  updateCursor();
+
+  animSelect.addEventListener('change', () => handleSelect(animSelect.value));
+
+  // Default to the first Fox pose.
+  const defaultIdx = ITEMS.findIndex(it => it.group === 'Ch1 Fox (Nick)');
+  animSelect.value = String(defaultIdx);
+  handleSelect(animSelect.value);
+</script>
+</body>
+</html>
