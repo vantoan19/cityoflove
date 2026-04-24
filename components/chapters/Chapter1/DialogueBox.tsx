@@ -25,29 +25,13 @@ export default function DialogueBox({ beat, beatIndex, onAdvance, onComplete }: 
         aria-label="Tap to continue"
       />
 
-      <div className={styles.box}>
-        {isCTA && (
+      {isCTA && (
+        <div className={styles.box}>
           <button className={styles.ctaButton} onClick={onComplete}>
             {beat.cta}
           </button>
-        )}
-
-        <div className={styles.dots}>
-          {Array.from({ length: 7 }, (_, i) => {
-            const dotBeat = i + 1
-            const state =
-              dotBeat < beatIndex ? 'dotPast' :
-              dotBeat === beatIndex ? 'dotCurrent' : 'dotFuture'
-            return (
-              <div
-                key={dotBeat}
-                data-testid="beat-dot"
-                className={`${styles.dot} ${styles[state]}`}
-              />
-            )
-          })}
         </div>
-      </div>
+      )}
     </>
   )
 }
