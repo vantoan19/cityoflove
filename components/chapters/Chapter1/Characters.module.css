@@ -5,18 +5,18 @@
 
 .character {
   position: absolute;
-  bottom: -30px;
+  bottom: -50px;
   height: 52vh;
   width: auto;
   animation: poseEnter 0.4s ease-out forwards;
 }
 
 .nick {
-  left: calc(3% + 100px);
+  left: calc(3% + 200px);
 }
 
 .judy {
-  right: calc(5% + 100px);
+  right: calc(5% + 200px);
 }
 
 .character img {
