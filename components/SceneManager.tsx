@@ -5,6 +5,8 @@ import ChapterTransition from './ChapterTransition'
 import ChapterStub from './chapters/ChapterStub'
 
 const Chapter1 = dynamic(() => import('./chapters/Chapter1'), { ssr: false })
+const Chapter2 = dynamic(() => import('./chapters/Chapter2'), { ssr: false })
+const Chapter3 = dynamic(() => import('./chapters/Chapter3'), { ssr: false })
 
 export default function SceneManager() {
   const [currentChapter, setCurrentChapter] = useState(1)
@@ -32,7 +34,17 @@ export default function SceneManager() {
           <Chapter1 onComplete={() => advanceChapter(2)} />
         </div>
       )}
-      {currentChapter !== 1 && (
+      {currentChapter === 2 && (
+        <div data-testid="chapter-2" style={{ width: '100%', height: '100%' }}>
+          <Chapter2 onComplete={() => advanceChapter(3)} />
+        </div>
+      )}
+      {currentChapter === 3 && (
+        <div data-testid="chapter-3" style={{ width: '100%', height: '100%' }}>
+          <Chapter3 onComplete={() => advanceChapter(4)} />
+        </div>
+      )}
+      {currentChapter > 3 && (
         <div data-testid={`chapter-stub-${currentChapter}`} style={{ width: '100%', height: '100%' }}>
           <ChapterStub
             chapterNumber={currentChapter}
