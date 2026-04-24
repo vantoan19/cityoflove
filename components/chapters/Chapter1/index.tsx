@@ -116,7 +116,7 @@ export default function Chapter1({ onComplete }: Props) {
           top: '18%',
           left: '50%',
           transform: 'translateX(-50%)',
-          width: 'clamp(320px, 70vw, 900px)',
+          width: 'clamp(280px, 50vw, 700px)',
           zIndex: 5,
           pointerEvents: 'none',
           opacity: currentBeat === INTRO_BEAT ? 1 : 0,
