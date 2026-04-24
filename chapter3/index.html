@@ -117,6 +117,38 @@
       }, 220);
     }
     startBackgroundLoops();
+
+    let foxFrameTimer = null;
+    let bunnyFrameTimer = null;
+
+    function setPose(character, poseName) {
+      const imgEl = document.getElementById(character === 'fox' ? 'foxImg' : 'bunnyImg');
+      const base = character === 'fox'
+        ? `../chapter1/animations/fox/${poseName}/frame`
+        : `../chapter1/animations/bunny/${poseName}/frame`;
+
+      gsap.to(imgEl, { opacity: 0, duration: 0.15, onComplete: () => {
+        // Clear old timer
+        if (character === 'fox')   { clearInterval(foxFrameTimer);   foxFrameTimer   = null; }
+        if (character === 'bunny') { clearInterval(bunnyFrameTimer); bunnyFrameTimer = null; }
+
+        let frame = 1;
+        imgEl.src = base + '1.png';
+        gsap.to(imgEl, { opacity: 1, duration: 0.15 });
+
+        const timer = setInterval(() => {
+          frame = (frame % 5) + 1;
+          imgEl.src = base + frame + '.png';
+        }, 200);
+
+        if (character === 'fox')   foxFrameTimer   = timer;
+        if (character === 'bunny') bunnyFrameTimer = timer;
+      }});
+    }
+
+    // Kick off default idle pose
+    setPose('fox',   'pose1_neutral_idle');
+    setPose('bunny', 'pose1_neutral_idle');
   </script>
 </body>
 </html>
