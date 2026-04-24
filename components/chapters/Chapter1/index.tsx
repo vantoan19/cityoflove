@@ -107,49 +107,22 @@ export default function Chapter1({ onComplete }: Props) {
         />
       )}
 
-      {/* Hero title — fades in on intro, fades out when dialogue begins */}
-      <div style={{
-        position: 'absolute',
-        top: '18%',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        textAlign: 'center',
-        zIndex: 5,
-        pointerEvents: 'none',
-        opacity: currentBeat === INTRO_BEAT ? 1 : 0,
-        transition: 'opacity 0.6s ease',
-        whiteSpace: 'nowrap',
-      }}>
-        <p style={{
-          margin: '0 0 8px',
-          fontFamily: 'Georgia, serif',
-          fontStyle: 'italic',
-          fontSize: 'clamp(0.85rem, 2vw, 1.1rem)',
-          letterSpacing: '0.25em',
-          color: 'rgba(255,255,255,0.85)',
-          textTransform: 'uppercase',
-          textShadow: '0 2px 8px rgba(0,0,0,0.5)',
-        }}>
-          Chapter I
-        </p>
-        <h1 style={{
-          margin: 0,
-          fontFamily: 'Georgia, "Times New Roman", serif',
-          fontSize: 'clamp(2.8rem, 8vw, 6rem)',
-          fontWeight: 'bold',
-          color: '#FFE066',
-          lineHeight: 1,
-          textShadow: [
-            '0 2px 0 #C8960C',
-            '0 4px 0 #A07808',
-            '0 6px 0 #785806',
-            '0 8px 0 rgba(0,0,0,0.25)',
-            '0 12px 24px rgba(0,0,0,0.5)',
-          ].join(', '),
-        }}>
-          The City of Love
-        </h1>
-      </div>
+      {/* Hero title image — fades in on intro, fades out when dialogue begins */}
+      <img
+        src="/chapter1/title.png"
+        alt="The City of Love"
+        style={{
+          position: 'absolute',
+          top: '18%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: 'clamp(320px, 70vw, 900px)',
+          zIndex: 5,
+          pointerEvents: 'none',
+          opacity: currentBeat === INTRO_BEAT ? 1 : 0,
+          transition: 'opacity 0.6s ease',
+        }}
+      />
 
       {currentBeat === INTRO_BEAT && (
         <div
