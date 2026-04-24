@@ -5,7 +5,7 @@
 
 .character {
   position: absolute;
-  bottom: 10%;
+  bottom: 0;
   height: 52vh;
   width: auto;
   animation: poseEnter 0.4s ease-out forwards;
