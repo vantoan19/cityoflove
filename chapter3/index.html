@@ -58,6 +58,21 @@
 
     // Tune left/top/width/height after viewing actual chocolate_box_open.png
     const BAR_GRID = { cols: 4, rows: 2, left: 0.08, top: 0.38, width: 0.84, height: 0.50 };
+
+    function startBackgroundLoops() {
+      let skyFrame = 1;
+      setInterval(() => {
+        skyFrame = (skyFrame % 4) + 1;
+        document.getElementById('skyOverlay').src = `backgrounds/sky_overlays/frame${skyFrame}.png`;
+      }, 700);
+
+      let cityFrame = 1;
+      setInterval(() => {
+        cityFrame = (cityFrame % 8) + 1;
+        document.getElementById('cityOverlay').src = `backgrounds/city_overlays/frame${cityFrame}.png`;
+      }, 220);
+    }
+    startBackgroundLoops();
   </script>
 </body>
 </html>
