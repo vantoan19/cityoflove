@@ -94,6 +94,19 @@
     .bar-btn:hover { background: #2A2118; color: #F5EFE0; }
     .bar-btn--locked { cursor: default; }
     .bar-btn--locked:hover { background: #F5EFE0; color: #2A2118; }
+
+    .bar-message {
+      position: fixed;
+      font-family: 'Caveat', cursive;
+      font-size: clamp(16px, 2.2vw, 30px);
+      font-weight: 700;
+      color: #2A2118;
+      text-align: center;
+      white-space: pre-line;
+      pointer-events: none;
+      transform-origin: center bottom;
+      z-index: 50;
+    }
   </style>
 </head>
 <body>
@@ -413,6 +426,25 @@
         showBarMessage(index);
         if (openedBars.size === 7 && !openedBars.has(7)) setTimeout(triggerLockBreak, 400);
       });
+    }
+
+    function showBarMessage(index) {
+      const cell = document.getElementById(`bar-cell-${index}`);
+      const cr   = cell.getBoundingClientRect();
+      const rot  = (Math.random() * 3 - 1.5).toFixed(1);
+
+      const msg = document.createElement('div');
+      msg.className = 'bar-message';
+      msg.textContent = BAR_DATA[index].message;
+      msg.style.cssText = `
+        left:${Math.round(cr.left + cr.width / 2)}px;
+        top:${Math.round(cr.top - 12)}px;
+        transform:translateX(-50%) translateY(-100%) rotate(${rot}deg);
+      `;
+      document.body.appendChild(msg);
+      activeMessageEl = msg;
+
+      gsap.fromTo(msg, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' });
     }
 
     function startPhase2() {
