@@ -1,0 +1,131 @@
+/* ── Chapter 6 — Growing Together ────────────────────────── */
+
+.ch6-root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  position: relative;
+  background: #fdf8f0;
+  font-family: var(--font-caveat), cursive;
+}
+
+/* ── Left: letter column ────────────────────────────────── */
+.ch6-letter-col {
+  width: 55%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.ch6-letter {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: url('/chapter2/letter_long.png') top center / 100% 100% no-repeat;
+  will-change: transform;
+}
+
+/* ── Message blocks — positioned absolutely by JS ── */
+.ch6-message {
+  position: absolute;
+  left: 10%;
+  width: 80%;
+  opacity: 0;
+  text-align: center;
+  pointer-events: none;
+}
+
+.ch6-message p {
+  font-size: clamp(22px, 3vw, 44px);
+  font-weight: 600;
+  line-height: 1.9;
+  color: #3a2028;
+  text-align: center;
+  margin: 0;
+}
+
+.ch6-message p.ch6-emph {
+  font-size: clamp(26px, 3.6vw, 52px);
+  font-weight: 700;
+}
+
+.ch6-message p.ch6-big {
+  font-size: clamp(30px, 4.2vw, 62px);
+  font-weight: 700;
+}
+
+/* ── Right: sprout column ───────────────────────────────── */
+.ch6-sprout-col {
+  width: 45%;
+  height: 100%;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.ch6-sprout-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center bottom;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+
+.ch6-sprout-img.ch6-active {
+  opacity: 1;
+}
+
+/* ── Scroll hint ─────────────────────────────────────────── */
+.ch6-hint {
+  position: absolute;
+  bottom: 40px;
+  left: 27.5%;
+  transform: translateX(-50%);
+  font-size: clamp(14px, 1.8vw, 20px);
+  color: #5a3540;
+  text-align: center;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 10;
+  transition: opacity 0.4s ease;
+}
+.ch6-hint-arrow {
+  display: block;
+  margin-top: 4px;
+  animation: ch6Bounce 1.5s ease-in-out infinite;
+}
+@keyframes ch6Bounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(7px); }
+}
+
+/* ── Next chapter button ─────────────────────────────────── */
+.ch6-next-btn {
+  position: absolute;
+  bottom: 40px;
+  left: 27.5%;
+  transform: translateX(-50%) rotate(-0.4deg);
+  font-family: var(--font-caveat), cursive;
+  font-size: clamp(16px, 2.2vw, 26px);
+  font-weight: 600;
+  color: #5a3540;
+  background: rgba(253, 250, 245, 0.9);
+  border: 1.5px solid #5a3540;
+  border-radius: 3px;
+  padding: 9px 24px;
+  cursor: pointer;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  box-shadow: 2px 2px 0 rgba(90, 53, 64, 0.15);
+  transition: background 0.2s, color 0.2s, opacity 0.5s;
+  z-index: 10;
+}
+.ch6-next-btn:hover { background: #5a3540; color: #fdfaf5; }
+.ch6-next-btn.ch6-visible { opacity: 1; pointer-events: auto; }
