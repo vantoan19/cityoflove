@@ -20,7 +20,20 @@
   </style>
 </head>
 <body>
-  <div id="phase1"></div>
+  <div id="phase1">
+    <div id="sky" style="position:absolute;inset:0;overflow:hidden;">
+      <img id="skyBase" src="backgrounds/sky.png"
+           style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+      <img id="skyOverlay" src="backgrounds/sky_overlays/frame1.png"
+           style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;mix-blend-mode:screen;">
+    </div>
+    <div id="city" style="position:absolute;inset:0;overflow:hidden;">
+      <img id="cityBase" src="backgrounds/city.png"
+           style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+      <img id="cityOverlay" src="backgrounds/city_overlays/frame1.png"
+           style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;mix-blend-mode:screen;">
+    </div>
+  </div>
   <div id="phase2"></div>
   <script>
     const BEATS = [
