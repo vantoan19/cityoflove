@@ -85,7 +85,7 @@ export default function Chapter1({ onComplete }: Props) {
       <div style={{
         position: 'absolute', inset: 0,
         transform: cameraTransform,
-        transformOrigin: '50% 75%',
+        transformOrigin: '50% 85%',
         transition: 'transform 0.7s cubic-bezier(0.4, 0, 0.2, 1)',
       }}>
         <Background />
