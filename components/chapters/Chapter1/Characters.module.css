@@ -24,13 +24,11 @@
 }
 
 .focused {
-  scale: 1.18;
   z-index: 2;
 }
 
 .unfocused {
-  scale: 0.88;
-  opacity: 0.5;
+  opacity: 0.6;
 }
 
 .charInner {

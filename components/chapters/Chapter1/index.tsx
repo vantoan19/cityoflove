@@ -70,19 +70,33 @@ export default function Chapter1({ onComplete }: Props) {
     ? beat.text
     : null
 
+  // Camera zoom: pan onto the active character, zoom back out on idle
+  const cameraTransform =
+    phase === 'speaker' ? 'scale(2.5) translateX(28%)' :
+    phase === 'reactor' ? 'scale(2.5) translateX(-28%)' :
+    'scale(1) translateX(0)'
+
   return (
     <div
       data-testid="chapter-1"
       style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}
     >
-      <Background />
-      <Characters
-        nickPose={beat.nickPose}
-        judyPose={beat.judyPose}
-        focus={focus as 'nick' | 'judy' | 'none'}
-        speechText={speechText}
-        phase={phase}
-      />
+      {/* Zoomable scene layer — Background + Characters zoom together */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        transform: cameraTransform,
+        transformOrigin: '50% 75%',
+        transition: 'transform 0.7s cubic-bezier(0.4, 0, 0.2, 1)',
+      }}>
+        <Background />
+        <Characters
+          nickPose={beat.nickPose}
+          judyPose={beat.judyPose}
+          focus={focus as 'nick' | 'judy' | 'none'}
+          speechText={speechText}
+          phase={phase}
+        />
+      </div>
 
       {currentBeat > INTRO_BEAT && currentBeat < CTA_BEAT && (
         <DialogueBox

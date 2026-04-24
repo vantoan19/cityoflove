@@ -7,76 +7,91 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-    body {
+    html, body {
+      height: 100%;
+      overflow: hidden;
       background: #F4A7B9;
       font-family: 'Caveat', cursive;
-      overflow-x: hidden;
-      margin: 0;
-      padding: 0;
     }
 
-    /* ── Letter: full viewport width, image stretches to content ── */
+    /* Fixed viewport window — the letter pans inside this */
+    .letter-wrap {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    /* The letter — sized by JS to exact image aspect ratio, no stretch */
     .letter {
+      position: relative;
       width: 100%;
-      background: url('letter_long.png') center top / 100% 100% no-repeat;
-      /* top padding clears the heart; sides clear the pink border (~4%) */
-      padding: 6vw 5vw 5vw;
-
-      /* entrance: drift up from below */
-      opacity: 0;
-      transform: translateY(32px);
-      animation: letterIn 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) 0.35s forwards;
+      background: url('letter_long.png') top center / 100% 100% no-repeat;
+      will-change: transform;
+      /* height set by JS */
     }
 
-    @keyframes letterIn {
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* ── Message blocks ────────────────────────────────────────── */
+    /* ── Message blocks — positioned absolutely by JS ── */
     .message {
-      max-width: 680px;      /* keep text comfortably readable */
-      margin: 0 auto;
-      padding: 5vh 0;
+      position: absolute;
+      left: 12%;
+      width: 76%;
       opacity: 0;
-      transform: translateY(24px);
-      transition:
-        opacity   0.85s cubic-bezier(0.22, 0.61, 0.36, 1),
-        transform 0.85s cubic-bezier(0.22, 0.61, 0.36, 1);
-    }
-
-    .message.visible {
-      opacity: 1;
-      transform: translateY(0);
+      text-align: center;
+      /* top set by JS */
     }
 
     .message p {
-      font-size: clamp(20px, 2.2vw, 28px);
+      font-size: clamp(28px, 4vw, 52px);
+      font-weight: 600;
       line-height: 1.85;
       color: #3a2028;
       text-align: center;
     }
 
     .message p.emph {
-      font-size: clamp(22px, 2.5vw, 30px);
-      font-weight: 600;
-    }
-
-    .message p.big {
-      font-size: clamp(24px, 2.8vw, 34px);
+      font-size: clamp(32px, 4.6vw, 60px);
       font-weight: 700;
     }
 
-    /* ── 👀 flash ─────────────────────────────────────────────── */
+    .message p.big {
+      font-size: clamp(38px, 5.5vw, 72px);
+      font-weight: 700;
+    }
+
+    /* ── Scroll hint (fixed, outside the panning container) ── */
+    .hint {
+      position: fixed;
+      bottom: 48px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: clamp(16px, 2vw, 22px);
+      color: #5a3540;
+      text-align: center;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .hint-arrow {
+      display: block;
+      margin-top: 6px;
+      animation: bounce 1.5s ease-in-out infinite;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(8px); }
+    }
+
+    /* ── 👀 flash ── */
     .eyes {
       display: inline-block;
       opacity: 0;
       animation: eyesPop 2.5s ease forwards;
       animation-play-state: paused;
     }
-    .message.visible .eyes { animation-play-state: running; }
+    .eyes.active { animation-play-state: running; }
     @keyframes eyesPop {
       0%   { opacity: 0; transform: scale(0.4); }
       15%  { opacity: 1; transform: scale(1.2); }
@@ -85,15 +100,15 @@
       100% { opacity: 0; transform: scale(0.7); }
     }
 
-    /* ── "Hey Jude" line ──────────────────────────────────────── */
+    /* ── "Hey Jude" line ── */
     .song-title {
-      font-size: clamp(24px, 2.8vw, 34px) !important;
+      font-size: clamp(32px, 4.2vw, 56px) !important;
       font-weight: 700 !important;
       color: #b85060 !important;
       letter-spacing: 0.03em;
     }
 
-    /* ── Sketch audio player ──────────────────────────────────── */
+    /* ── Sketch audio player ── */
     .sketch-player {
       margin: 20px auto 0;
       max-width: 320px;
@@ -107,11 +122,8 @@
       transform: rotate(-0.4deg);
       box-shadow: 2px 2px 0 rgba(90, 53, 64, 0.2);
     }
-
     .sp-note { font-size: 20px; color: #b85060; flex-shrink: 0; line-height: 1; }
-
     .sp-info { flex: 1; min-width: 0; }
-
     .sp-label {
       font-family: 'Caveat', cursive;
       font-size: 15px;
@@ -120,7 +132,6 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
     .sp-track {
       position: relative;
       height: 2px;
@@ -130,7 +141,6 @@
       cursor: pointer;
     }
     .sp-track:hover { background: rgba(90, 53, 64, 0.35); }
-
     .sp-fill {
       position: absolute;
       left: 0; top: 0;
@@ -139,7 +149,6 @@
       border-radius: 2px;
       transition: width 0.4s linear;
     }
-
     .sp-btn {
       flex-shrink: 0;
       width: 30px; height: 30px;
@@ -156,7 +165,7 @@
     .sp-btn:hover  { background: #b85060; color: #fdfaf5; border-color: #b85060; }
     .sp-btn:active { transform: scale(0.92); }
 
-    /* ── Typing (step 14) ─────────────────────────────────────── */
+    /* ── Typing (m14) ── */
     .cursor {
       display: inline-block;
       width: 2px; height: 0.85em;
@@ -169,136 +178,325 @@
       0%, 100% { opacity: 1; }
       50%       { opacity: 0; }
     }
-
     .reply {
       opacity: 0;
       transform: translateY(8px);
       transition: opacity 0.7s ease, transform 0.7s ease;
     }
     .reply.shown { opacity: 1; transform: translateY(0); }
+
+    /* ── Morning / afternoon persona ── */
+    .message p.morning   { color: #C87941; }
+    .message p.afternoon { color: #7B6BA8; }
+
+    /* ── Next chapter button ── */
+    .next-btn {
+      position: fixed;
+      bottom: 48px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Caveat', cursive;
+      font-size: clamp(18px, 2.4vw, 28px);
+      font-weight: 600;
+      color: #5a3540;
+      background: rgba(253, 250, 245, 0.85);
+      border: 1.5px solid #5a3540;
+      border-radius: 3px;
+      padding: 10px 28px;
+      cursor: pointer;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      box-shadow: 2px 2px 0 rgba(90, 53, 64, 0.18);
+      transform: translateX(-50%) rotate(-0.4deg);
+      transition: background 0.2s, color 0.2s;
+    }
+    .next-btn:hover  { background: #5a3540; color: #fdfaf5; }
+    .next-btn.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
   </style>
 </head>
 <body>
 
-<div class="letter" id="letter">
+<!-- Scroll hint lives outside the panning container so it stays fixed -->
+<div class="hint" id="hint">
+  scroll to begin
+  <span class="hint-arrow">↓</span>
+</div>
 
-  <div class="message" id="m1">
-    <p>It didn't start with a conversation.</p>
-    <p>It started with curiosity.</p>
-  </div>
+<!-- Next chapter button — shown on last message -->
+<button class="next-btn" id="next-btn" onclick="location.href='../chapter3/index.html'">
+  next chapter →
+</button>
 
-  <div class="message" id="m2">
-    <p>We knew each other through a friend.</p>
-    <p>Did a little stalking. <span class="eyes">👀</span></p>
-    <p>Said nothing. Too shy.</p>
-  </div>
+<div class="letter-wrap">
+  <div class="letter" id="letter">
 
-  <div class="message" id="m3">
-    <p>Then one day,</p>
-    <p>you appeared near my world.</p>
-  </div>
-
-  <div class="message" id="m4">
-    <p>We saw each other.</p>
-    <p>Just for a moment.</p>
-    <p>From a distance.</p>
-  </div>
-
-  <div class="message" id="m5">
-    <p class="big">And then you left.</p>
-  </div>
-
-  <div class="message" id="m6">
-    <p class="big">That could've been it.</p>
-  </div>
-
-  <div class="message" id="m7">
-    <p>But a week later,</p>
-    <p>I found an excuse:</p>
-    <p class="emph">"Let's have lunch."</p>
-  </div>
-
-  <div class="message" id="m8">
-    <p>You were…</p>
-    <p class="emph">warm. Easy. Bright.</p>
-  </div>
-
-  <div class="message" id="m9">
-    <p>And after that—</p>
-    <p>I couldn't focus on anything.</p>
-  </div>
-
-  <div class="message" id="m10">
-    <p>Because texting you</p>
-    <p>felt like the hardest thing in the world.</p>
-  </div>
-
-  <div class="message" id="m11">
-    <p>Then a song played.</p>
-    <p class="song-title">"Hey Jude…"</p>
-    <div class="sketch-player">
-      <span class="sp-note">♪</span>
-      <div class="sp-info">
-        <div class="sp-label">Hey Jude — The Beatles</div>
-        <div class="sp-track" id="sp-track">
-          <div class="sp-fill" id="sp-fill"></div>
-        </div>
-      </div>
-      <button class="sp-btn" id="sp-btn" title="Play">▶</button>
+    <div class="message" id="m1">
+      <p>It didn't start with a conversation.</p>
+      <p>It started with curiosity.</p>
     </div>
-    <audio id="audio" preload="none">
-      <source src="hey_jude.mp3" type="audio/mpeg">
-    </audio>
-  </div>
 
-  <div class="message" id="m12">
-    <p>And somehow it said:</p>
-    <p class="emph">You found her.</p>
-    <p class="emph">Now go get her.</p>
-  </div>
+    <div class="message" id="m2">
+      <p>We knew each other through a friend.</p>
+      <p>Did a little stalking. <span class="eyes">👀</span></p>
+      <p>Said nothing. Too shy.</p>
+    </div>
 
-  <div class="message" id="m13">
-    <p>So after way too much overthinking—</p>
-    <p>I did something brave.</p>
-  </div>
+    <div class="message" id="m3">
+      <p>Then one day,</p>
+      <p>you appeared near my world.</p>
+    </div>
 
-  <div class="message" id="m14">
-    <p><span id="typed"></span><span class="cursor" id="csr"></span></p>
-    <p class="reply" id="reply">You replied.</p>
-  </div>
+    <div class="message" id="m4">
+      <p>We saw each other.</p>
+      <p>Just for a moment.</p>
+      <p>From a distance.</p>
+    </div>
 
-</div><!-- /letter -->
+    <div class="message" id="m5">
+      <p class="big">And then you left.</p>
+    </div>
+
+    <div class="message" id="m6">
+      <p class="big">That could've been it.</p>
+    </div>
+
+    <div class="message" id="m7">
+      <p>But a week later,</p>
+      <p>I found an excuse:</p>
+      <p class="emph">"Let's have lunch."</p>
+    </div>
+
+    <div class="message" id="m8">
+      <p>You were…</p>
+      <p class="emph">warm. Easy. Bright.</p>
+    </div>
+
+    <div class="message" id="m9">
+      <p>And after that—</p>
+      <p>I couldn't focus on anything.</p>
+    </div>
+
+    <div class="message" id="m10">
+      <p>Because texting you</p>
+      <p>felt like the hardest thing in the world.</p>
+    </div>
+
+    <div class="message" id="m11">
+      <p>Then a song played.</p>
+      <p class="song-title">"Hey Jude…"</p>
+      <div class="sketch-player">
+        <span class="sp-note">♪</span>
+        <div class="sp-info">
+          <div class="sp-label">Hey Jude — The Beatles</div>
+          <div class="sp-track" id="sp-track">
+            <div class="sp-fill" id="sp-fill"></div>
+          </div>
+        </div>
+        <button class="sp-btn" id="sp-btn" title="Play">▶</button>
+      </div>
+      <audio id="audio" preload="none">
+        <source src="hey_jude.mp3" type="audio/mpeg">
+      </audio>
+    </div>
+
+    <div class="message" id="m12">
+      <p>And somehow it said:</p>
+      <p class="emph">You found her.</p>
+      <p class="emph">Now go get her.</p>
+    </div>
+
+    <div class="message" id="m13">
+      <p>So after way too much overthinking—</p>
+      <p>I did something brave.</p>
+    </div>
+
+    <div class="message" id="m14">
+      <p><span id="typed"></span><span class="cursor" id="csr"></span></p>
+      <p class="reply" id="reply">You replied.</p>
+    </div>
+
+    <div class="message" id="m15">
+      <p>And then—</p>
+      <p>we had our first real lunch.</p>
+    </div>
+
+    <div class="message" id="m16">
+      <p>That's when I saw more of you.</p>
+    </div>
+
+    <div class="message" id="m17">
+      <p class="emph">Not just fun.</p>
+      <p class="emph">Not just cute.</p>
+    </div>
+
+    <div class="message" id="m18">
+      <p>But…</p>
+      <p class="emph">someone who becomes what she does.</p>
+    </div>
+
+    <div class="message" id="m19">
+      <p class="morning">Morning:</p>
+      <p class="morning">a mom, raising kids in her mind.</p>
+    </div>
+
+    <div class="message" id="m20">
+      <p class="afternoon">Afternoon:</p>
+      <p class="afternoon">someone else entirely.</p>
+      <p class="afternoon">Just to understand.</p>
+      <p class="afternoon">Just to make things real.</p>
+    </div>
+
+    <div class="message" id="m21">
+      <p>That's when I knew—</p>
+      <p class="big">you don't just do things.</p>
+      <p class="big">You become them.</p>
+    </div>
+
+    <div class="message" id="m22">
+      <p class="big">From that moment,</p>
+      <p class="big">I know I've fallen in love with you.</p>
+    </div>
+
+  </div>
+</div>
 
 <script>
-  /* ── Scroll-reveal ──────────────────────────────────────────── */
-  const obs = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.classList.add('visible');
-        obs.unobserve(e.target);
-        if (e.target.id === 'm14') startTyping();
-      }
+  const letter   = document.getElementById('letter');
+  const hintEl   = document.getElementById('hint');
+  const nextBtn  = document.getElementById('next-btn');
+  const messages = Array.from(document.querySelectorAll('.message'));
+
+  let current   = -1;
+  let animating = false;
+  let letterH   = 0;
+
+  gsap.set(messages, { opacity: 0 });
+  gsap.set(letter,   { opacity: 0 });
+
+  /* ── Layout: size letter to image's exact aspect ratio,
+        then distribute messages evenly across the writing area ── */
+  function layout() {
+    const W     = window.innerWidth;
+    letterH     = W * imgRatio;
+    letter.style.height = letterH + 'px';
+
+    // Writing area: 13 % from top (clears heart) → 91 % from top (clears bottom border)
+    const yTop  = letterH * 0.13;
+    const yBot  = letterH * 0.84;
+    const span  = yBot - yTop;
+    const step  = span / messages.length;
+
+    messages.forEach((el, i) => {
+      // Centre each message in its slot
+      const slotMid = yTop + i * step + step / 2;
+      const elH     = el.offsetHeight || 0;
+      el.style.top  = (slotMid - elH / 2) + 'px';
     });
-  }, { threshold: 0.18, rootMargin: '0px 0px -40px 0px' });
 
-  document.querySelectorAll('.message').forEach(m => obs.observe(m));
+    // Re-snap camera to current message without animation
+    if (current >= 0) gsap.set(letter, { y: panTarget(current) });
+  }
 
-  /* ── Gentle letter parallax on scroll ───────────────────────── */
-  const letter = document.getElementById('letter');
-  let ticking  = false;
+  /* ── Pan target: centres message at 42 % of viewport,
+        clamped so the letter never scrolls beyond its edges ── */
+  function panTarget(index) {
+    const el  = messages[index];
+    const mid = parseFloat(el.style.top) + el.offsetHeight / 2;
+    const vh  = window.innerHeight;
+    const raw = mid - vh * 0.42;
+    return -Math.min(Math.max(raw, 0), Math.max(letterH - vh, 0));
+  }
 
-  window.addEventListener('scroll', () => {
-    if (!ticking) {
-      requestAnimationFrame(() => {
-        // Letter drifts ~4% slower than the scroll — barely perceptible but adds physical weight
-        letter.style.transform = `translateY(${window.scrollY * 0.04}px)`;
-        ticking = false;
-      });
-      ticking = true;
+  /* ── Load image to get natural ratio, then boot ─────────────── */
+  let imgRatio = 2;   // fallback until image loads
+  const probe  = new Image();
+  probe.onload = function () {
+    imgRatio = this.naturalHeight / this.naturalWidth;
+    layout();
+    window.addEventListener('resize', layout);
+    gsap.to(letter, { opacity: 1, duration: 1.0, ease: 'power2.out', delay: 0.3 });
+  };
+  probe.src = 'letter_long.png';
+
+  /* ── Core transition ─────────────────────────────────────────── */
+  function goTo(index) {
+    if (animating) return;
+    if (index === current) return;
+    if (index < -1 || index >= messages.length) return;
+
+    animating = true;
+    const tl = gsap.timeline({ onComplete: () => { animating = false; } });
+
+    // Fade out current
+    if (current === -1) {
+      tl.to(hintEl, { opacity: 0, duration: 0.25, ease: 'power1.in' }, 0);
+    } else {
+      tl.to(messages[current], { opacity: 0, duration: 0.3, ease: 'power1.in' }, 0);
     }
+
+    // Pan
+    const targetY = index === -1 ? 0 : panTarget(index);
+    tl.to(letter, { y: targetY, duration: 0.75, ease: 'power2.inOut' }, 0.15);
+
+    // Fade in
+    if (index === -1) {
+      tl.to(hintEl, { opacity: 1, duration: 0.4 }, 0.65);
+    } else {
+      tl.to(messages[index], { opacity: 1, duration: 0.6, ease: 'power1.out' }, 0.6);
+    }
+
+    // Special effects
+    if (index >= 0) {
+      if (messages[index].id === 'm2')
+        tl.call(() => document.querySelector('.eyes').classList.add('active'), null, 0.85);
+      if (messages[index].id === 'm14')
+        tl.call(() => startTyping(), null, 0.9);
+    }
+
+    // Show next-chapter button only on the last message
+    const isLast = index === messages.length - 1;
+    tl.call(() => {
+      nextBtn.classList.toggle('visible', isLast);
+    }, null, isLast ? 1.0 : 0);
+
+    current = index;
+  }
+
+  /* ── Input handlers ──────────────────────────────────────────── */
+  window.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    if (animating) return;
+    const dir = e.deltaY > 0 ? 1 : -1;
+    goTo(Math.min(Math.max(current + dir, -1), messages.length - 1));
+  }, { passive: false });
+
+  let touchY0 = null;
+  window.addEventListener('touchstart', e => { touchY0 = e.touches[0].clientY; }, { passive: true });
+  window.addEventListener('touchend', e => {
+    if (touchY0 === null) return;
+    const dy = touchY0 - e.changedTouches[0].clientY;
+    touchY0 = null;
+    if (Math.abs(dy) < 40 || animating) return;
+    const dir = dy > 0 ? 1 : -1;
+    goTo(Math.min(Math.max(current + dir, -1), messages.length - 1));
   }, { passive: true });
 
-  /* ── Audio player ───────────────────────────────────────────── */
+  window.addEventListener('keydown', e => {
+    if (animating) return;
+    if (e.key === 'ArrowDown' || e.key === ' ') {
+      e.preventDefault();
+      goTo(Math.min(current + 1, messages.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      goTo(Math.max(current - 1, -1));
+    }
+  });
+
+  /* ── Audio player ────────────────────────────────────────────── */
   const audio   = document.getElementById('audio');
   const spBtn   = document.getElementById('sp-btn');
   const spFill  = document.getElementById('sp-fill');
@@ -306,53 +504,28 @@
   let playing   = false;
 
   spBtn.addEventListener('click', () => {
-    if (playing) {
-      audio.pause();
-      spBtn.textContent = '▶';
-      playing = false;
-    } else {
-      audio.play().catch(() => {});
-      spBtn.textContent = '⏸';
-      playing = true;
-    }
+    if (playing) { audio.pause(); spBtn.textContent = '▶'; playing = false; }
+    else         { audio.play().catch(() => {}); spBtn.textContent = '⏸'; playing = true; }
   });
-
   audio.addEventListener('timeupdate', () => {
-    if (audio.duration)
-      spFill.style.width = (audio.currentTime / audio.duration * 100) + '%';
+    if (audio.duration) spFill.style.width = (audio.currentTime / audio.duration * 100) + '%';
   });
-
-  audio.addEventListener('ended', () => {
-    playing = false;
-    spBtn.textContent = '▶';
-    spFill.style.width = '0%';
-  });
-
+  audio.addEventListener('ended', () => { playing = false; spBtn.textContent = '▶'; spFill.style.width = '0%'; });
   spTrack.addEventListener('click', e => {
     if (!audio.duration) return;
     const r = spTrack.getBoundingClientRect();
     audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
   });
 
-  /* ── Typing animation ───────────────────────────────────────── */
+  /* ── Typing animation (m14) ──────────────────────────────────── */
   function startTyping() {
-    const text   = 'I texted you.';
-    const typed  = document.getElementById('typed');
-    const cursor = document.getElementById('csr');
-    const reply  = document.getElementById('reply');
+    const text = 'I texted you.', typed = document.getElementById('typed'),
+          cursor = document.getElementById('csr'), reply = document.getElementById('reply');
     let i = 0;
     typed.textContent = '';
-
     const tick = () => {
-      if (i < text.length) {
-        typed.textContent += text[i++];
-        setTimeout(tick, 55 + Math.random() * 65);
-      } else {
-        setTimeout(() => {
-          cursor.style.display = 'none';
-          reply.classList.add('shown');
-        }, 900);
-      }
+      if (i < text.length) { typed.textContent += text[i++]; setTimeout(tick, 55 + Math.random() * 65); }
+      else setTimeout(() => { cursor.style.display = 'none'; reply.classList.add('shown'); }, 900);
     };
     setTimeout(tick, 500);
   }
