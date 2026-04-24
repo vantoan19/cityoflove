@@ -156,3 +156,10 @@
   border-color:rgba(200,215,230,0.7);
   color:rgba(200,215,230,1);
 }
+
+/* ── Paragraph margin reset ── */
+.ch5-beat p,
+.ch5-beat-m2 p {
+  margin: 0;
+  padding: 0;
+}
