@@ -1,19 +1,19 @@
-/* Sky pans right-to-left over 60s */
+/* Sky subtle pan */
 @keyframes skyPan {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-25%); }
+  0%, 100% { transform: scale(1.05) translateX(0); }
+  50%       { transform: scale(1.05) translateX(-3%); }
 }
 
 /* Mountains gentle sway */
 @keyframes mountainsSway {
-  0%, 100% { transform: translateX(0); }
-  50%       { transform: translateX(4px); }
+  0%, 100% { transform: scale(1.05) translateX(0); }
+  50%       { transform: scale(1.05) translateX(4px); }
 }
 
 /* City buildings slow drift */
 @keyframes cityDrift {
-  0%, 100% { transform: translateX(0); }
-  50%       { transform: translateX(-8px); }
+  0%, 100% { transform: scale(1.05) translateX(0); }
+  50%       { transform: scale(1.05) translateX(-8px); }
 }
 
 /* Wind streak sweep */
@@ -29,37 +29,25 @@
   pointer-events: none;
 }
 
-.sky {
+.layer {
   position: absolute;
-  top: 0; left: 0;
-  width: 200%;
-  height: 65%;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  object-position: top left;
-  animation: skyPan 60s linear infinite;
+  object-position: center;
+}
+
+.sky {
+  animation: skyPan 60s ease-in-out infinite;
 }
 
 .mountains {
-  position: absolute;
-  bottom: 28%;
-  left: 0; right: 0;
-  width: 100%;
   animation: mountainsSway 8s ease-in-out infinite;
 }
 
 .city {
-  position: absolute;
-  bottom: 26%;
-  left: 0; right: 0;
-  width: 100%;
   animation: cityDrift 25s ease-in-out infinite;
-}
-
-.foreground {
-  position: absolute;
-  bottom: 0;
-  left: 0; right: 0;
-  width: 100%;
 }
 
 .windStreak {
@@ -68,6 +56,5 @@
   width: 110px;
   background: white;
   opacity: 0.07;
-  animation: windSweep 2.2s linear;
-  animation-iteration-count: infinite;
+  animation: windSweep 2.2s linear infinite;
 }

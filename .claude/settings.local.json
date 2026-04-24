@@ -41,7 +41,16 @@
       "Bash(timeout 15 npm run dev)",
       "Bash(git init *)",
       "Bash(git -C /c/Projects/city add -A)",
-      "Bash(git -C /c/Projects/city status --short)"
+      "Bash(git -C /c/Projects/city status --short)",
+      "Bash(git *)",
+      "Bash(npm run *)",
+      "Bash(node *)",
+      "Bash(npm test *)",
+      "Bash(npx tsc *)",
+      "Bash(xargs ls *)",
+      "Bash(cp -r C:/Projects/city/backgrounds_high/sky/. C:/Projects/city/public/chapter1/backgrounds/sky/)",
+      "Bash(cp -r C:/Projects/city/backgrounds_high/city_buildings/. C:/Projects/city/public/chapter1/backgrounds/city_buildings/)",
+      "Bash(cp -r C:/Projects/city/backgrounds_high/foreground_bushes/. C:/Projects/city/public/chapter1/backgrounds/foreground_bushes/)"
     ]
   },
   "enableAllProjectMcpServers": true,

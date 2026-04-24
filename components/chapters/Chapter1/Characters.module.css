@@ -18,3 +18,9 @@
 .judy {
   right: 10%;
 }
+
+.character img {
+  height: 100%;
+  width: auto;
+  display: block;
+}
