@@ -5,6 +5,7 @@ import './chapter6.css'
 
 interface Props { onComplete: () => void }
 
+// assets live in public/chapter7/ — intentional, this chapter's images are in that folder
 const STAGES = [1, 2, 3, 4, 5, 6].map(n => `/chapter7/sprout_stage_${n}.png`)
 
 const MESSAGES = [
@@ -43,6 +44,7 @@ export default function Chapter6({ onComplete }: Props) {
 
     // Sprout stage management
     const sproutImgs = Array.from(root.querySelectorAll<HTMLImageElement>('.ch6-sprout-img'))
+    const msgEls = Array.from(root.querySelectorAll<HTMLElement>('.ch6-message'))
     let currentStage = 0
 
     function setStage(idx: number) {
@@ -59,7 +61,6 @@ export default function Chapter6({ onComplete }: Props) {
       maxScroll = Math.max(letterH - vh, 0)
       letter.style.height = `${letterH}px`
 
-      const msgEls = Array.from(root.querySelectorAll<HTMLElement>('.ch6-message'))
       const yTop   = letterH * 0.08
       const yBot   = letterH * 0.90
       const step   = (yBot - yTop) / msgEls.length
@@ -93,7 +94,7 @@ export default function Chapter6({ onComplete }: Props) {
       const isEnd = vScroll >= maxScroll - 40
       if (isEnd && !atEnd) {
         atEnd = true
-        setTimeout(() => nextBtn.classList.add('ch6-visible'), 400)
+        setTimeout(() => { if (atEnd) nextBtn.classList.add('ch6-visible') }, 400)
       } else if (!isEnd && atEnd) {
         atEnd = false
         nextBtn.classList.remove('ch6-visible')
@@ -128,7 +129,6 @@ export default function Chapter6({ onComplete }: Props) {
       setStage(0)
 
       // IntersectionObserver for message fade-in
-      const msgEls = Array.from(root.querySelectorAll<HTMLElement>('.ch6-message'))
       gsap.set(msgEls, { opacity: 0, y: 16 })
       obs = new IntersectionObserver(entries => {
         entries.forEach(e => {
@@ -146,7 +146,6 @@ export default function Chapter6({ onComplete }: Props) {
     root.addEventListener('touchstart', onTouchStart, { passive: true  })
     root.addEventListener('touchmove',  onTouchMove,  { passive: false })
     window.addEventListener('keydown',  onKeyDown)
-    nextBtn.addEventListener('click', () => onCompleteRef.current())
 
     return () => {
       window.removeEventListener('resize',  layout)
@@ -156,6 +155,7 @@ export default function Chapter6({ onComplete }: Props) {
       root.removeEventListener('touchmove',  onTouchMove)
       obs?.disconnect()
       gsap.killTweensOf(letter)
+      gsap.killTweensOf(hint)
     }
   }, [])
 
@@ -175,7 +175,7 @@ export default function Chapter6({ onComplete }: Props) {
           scroll to read
           <span className="ch6-hint-arrow">↓</span>
         </div>
-        <button className="ch6-next-btn" ref={nextBtnRef}>
+        <button className="ch6-next-btn" ref={nextBtnRef} onClick={() => onCompleteRef.current()}>
           next chapter →
         </button>
       </div>
