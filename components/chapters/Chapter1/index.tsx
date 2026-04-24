@@ -70,9 +70,11 @@ export default function Chapter1({ onComplete }: Props) {
     ? beat.text
     : null
 
-  // Camera zoom: keeps both characters in frame at this scale with current positions
+  // At scale(2): visible window = 50% of scene. +8% pan shows Nick (left 19%), -8% shows Judy (right 20%).
   const cameraTransform =
-    phase === 'idle' ? 'scale(1)' : 'scale(1.6)'
+    phase === 'idle'    ? 'scale(1) translateX(0)' :
+    phase === 'speaker' ? 'scale(2) translateX(8%)' :
+                          'scale(2) translateX(-8%)'
 
   return (
     <div

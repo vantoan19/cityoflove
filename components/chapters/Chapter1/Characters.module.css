@@ -5,7 +5,7 @@
 
 .charOuter {
   position: absolute;
-  bottom: -5.5vh;
+  bottom: 0;
   height: 52vh;
   width: fit-content;
   overflow: visible;
