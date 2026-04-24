@@ -70,9 +70,9 @@ export default function Chapter1({ onComplete }: Props) {
     ? beat.text
     : null
 
-  // Camera zoom: gentle zoom keeping both characters in frame
+  // Camera zoom: keeps both characters in frame at this scale with current positions
   const cameraTransform =
-    phase === 'idle' ? 'scale(1)' : 'scale(1.4)'
+    phase === 'idle' ? 'scale(1)' : 'scale(1.6)'
 
   return (
     <div

@@ -14,21 +14,17 @@
 }
 
 .nick {
-  left: 16%;
+  left: 19%;
   transform-origin: bottom left;
 }
 
 .judy {
-  right: 18%;
+  right: 20%;
   transform-origin: bottom right;
 }
 
 .focused {
   z-index: 2;
-}
-
-.unfocused {
-  opacity: 0.6;
 }
 
 .charInner {
