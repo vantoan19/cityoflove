@@ -39,10 +39,104 @@ export default function Chapter5({ onComplete }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const rain = rainRef.current
-    if (!rain) return
+    if (!rootRef.current || !rainRef.current || !flashRef.current) return
+    const root  = rootRef.current
+    const rain  = rainRef.current
+    const flash = flashRef.current
+
+    /* start M1 rain */
     spawnRain(rain, 80, 1.0, 1.4, 0.4, 0.7, 20)
-    return () => { rain.innerHTML = '' }
+
+    /* ── Memory flash images ── */
+    const FLASH_SRCS: (string | null)[] = [
+      '/chapter3/backgrounds/city_night/city_base.png',
+      '/chapter4/backgrounds/bg_night_room.png',
+      '/chapter4/backgrounds/bg_restaurant_table.png',
+      '/chapter4/backgrounds/bg_tree_path.png',
+      '/chapter4/backgrounds/bg_shelter.png',
+      null, /* white flash */
+    ]
+
+    let memFired = false
+
+    function triggerMemoryFlash(onDone: () => void) {
+      if (memFired) return
+      memFired = true
+      const origOverflow = root.style.overflow
+      root.style.overflow = 'hidden'
+      flash.style.display = 'block'
+      let i = 0
+      function next() {
+        if (i >= FLASH_SRCS.length) {
+          root.classList.add('ch5-glitch')
+          setTimeout(() => {
+            root.classList.remove('ch5-glitch')
+            flash.style.display = 'none'
+            root.style.overflow = origOverflow
+            onDone()
+          }, 80)
+          return
+        }
+        const src = FLASH_SRCS[i++]
+        if (src) {
+          flash.style.backgroundColor = ''
+          flash.style.backgroundImage = `url('${src}')`
+        } else {
+          flash.style.backgroundImage = 'none'
+          flash.style.backgroundColor = '#ffffff'
+        }
+        setTimeout(next, 150)
+      }
+      next()
+    }
+
+    /* ── Observer 2: M2 beats ── */
+    const obs2 = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return
+        const el = e.target as HTMLElement
+        el.classList.add('ch5-on')
+        obs2.unobserve(el)
+        if (el.id === 'ch5-b16') {
+          setTimeout(() => {
+            const endEl = document.getElementById('ch5-end')
+            if (endEl) endEl.classList.add('ch5-on')
+            const btn = document.getElementById('ch5-next-btn')
+            if (btn) btn.onclick = () => onCompleteRef.current()
+          }, 1500)
+        }
+      })
+    }, { threshold: 0.18, rootMargin: '0px 0px -60px 0px' })
+
+    function activateM2() {
+      root.classList.add('ch5-m2')
+      spawnRain(rain, 30, 2.2, 2.8, 0.2, 0.35, 35)
+      root.querySelectorAll<HTMLElement>('.ch5-beat-m2').forEach(b => obs2.observe(b))
+    }
+
+    /* ── Observer 1: M1 beats ── */
+    const obs1 = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return
+        const el = e.target as HTMLElement
+        el.classList.add('ch5-on')
+        obs1.unobserve(el)
+        el.querySelectorAll<HTMLElement>('[data-d]').forEach(c =>
+          setTimeout(() => c.classList.add('ch5-on'), +(c.dataset.d ?? 0))
+        )
+        if (el.id === 'ch5-b9') {
+          setTimeout(() => triggerMemoryFlash(activateM2), 600)
+        }
+      })
+    }, { threshold: 0.18, rootMargin: '0px 0px -10px 0px' })
+
+    root.querySelectorAll<HTMLElement>('.ch5-beat').forEach(b => obs1.observe(b))
+
+    return () => {
+      rain.innerHTML = ''
+      obs1.disconnect()
+      obs2.disconnect()
+    }
   }, [])
 
   return (
@@ -97,7 +191,48 @@ export default function Chapter5({ onComplete }: Props) {
           <p className="ch5-t-conf">a bit too hard.</p>
         </div>
 
-        {/* M2 beats added in Task 5 */}
+        {/* ══ M2 ══ */}
+        <div className="ch5-sp-m2" />
+
+        <div className="ch5-beat-m2" id="ch5-b10">
+          <p className="ch5-t-m2-soft">Somewhere in the middle…</p>
+        </div>
+        <div className="ch5-sp-m2" />
+
+        <div className="ch5-beat-m2" id="ch5-b11">
+          <p className="ch5-t-m2-main">things got a little blurry.</p>
+        </div>
+        <div className="ch5-sp-m2" />
+
+        <div className="ch5-beat-m2" id="ch5-b12">
+          <p className="ch5-t-m2-soft">Not wrong.</p>
+        </div>
+        <div className="ch5-sp-m2" />
+
+        <div className="ch5-beat-m2" id="ch5-b13">
+          <p className="ch5-t-m2-soft">Just…</p>
+        </div>
+        <div className="ch5-sp-m2" />
+
+        <div className="ch5-beat-m2" id="ch5-b14">
+          <p className="ch5-t-m2-key">too much, too fast.</p>
+        </div>
+        <div className="ch5-sp-m2" />
+
+        <div className="ch5-beat-m2 ch5-no-blur" id="ch5-b15">
+          <p className="ch5-t-m2-main">You weren&rsquo;t pulling away.</p>
+        </div>
+        <div className="ch5-sp-m2" />
+
+        <div className="ch5-beat-m2 ch5-no-blur" id="ch5-b16">
+          <p className="ch5-t-m2-core">You were just trying to breathe.</p>
+        </div>
+        <div className="ch5-sp-m2" />
+
+        <div className="ch5-end" id="ch5-end">
+          <span className="ch5-end-label">Chapter 5</span>
+          <button className="ch5-next-btn" id="ch5-next-btn">Continue →</button>
+        </div>
       </div>
     </div>
   )
