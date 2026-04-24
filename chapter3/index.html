@@ -344,6 +344,20 @@
       window.addEventListener('resize', render);
     }
 
+    function onBarHover(index, entering) {
+      if (openedBars.has(index)) return;
+      const cell = document.getElementById(`bar-cell-${index}`);
+      if (entering) {
+        gsap.to(cell, { y: -8, duration: 0.28, ease: 'power2.out' });
+        gsap.fromTo(`.shimmer-${index}`,
+          { x: '-150%' },
+          { x: '150%', duration: 0.55, ease: 'none' }
+        );
+      } else {
+        gsap.to(cell, { y: 0, duration: 0.28, ease: 'power2.inOut' });
+      }
+    }
+
     function startPhase2() {
       phase1Done = true;
       clearTimeout(beatTimer);
