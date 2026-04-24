@@ -62,7 +62,7 @@ const BEATS = [
   'ch5-b10', 'ch5-b11', 'ch5-b12', 'ch5-b13', 'ch5-b14', 'ch5-b15', 'ch5-b16',
 ] as const
 
-const M2_IDX = 7 // index of ch5-b10 in BEATS
+const M2_IDX = 7 // index of ch5-b10
 
 export default function Chapter5({ onComplete }: Props) {
   const onCompleteRef = useRef(onComplete)
@@ -82,7 +82,60 @@ export default function Chapter5({ onComplete }: Props) {
 
     spawnRain(rain, 80, 1.0, 1.4, 0.4, 0.7, 20)
 
-    /* ── Memory flash images ── */
+    /* ── Typing engine ── */
+    type BeatPara = { p: HTMLElement; text: string }
+    const beatParas = new Map<string, BeatPara[]>()
+
+    BEATS.forEach(id => {
+      const el = document.getElementById(id)
+      if (!el) return
+      const paras: BeatPara[] = []
+      el.querySelectorAll<HTMLElement>('p').forEach(p => {
+        paras.push({ p, text: p.textContent ?? '' })
+        p.textContent = ''
+      })
+      beatParas.set(id, paras)
+    })
+
+    const typingTimers = new Map<string, ReturnType<typeof setTimeout>[]>()
+
+    function cancelTyping(id: string) {
+      ;(typingTimers.get(id) ?? []).forEach(clearTimeout)
+      typingTimers.set(id, [])
+    }
+
+    function typeBeat(id: string, m2: boolean) {
+      cancelTyping(id)
+      const paras = beatParas.get(id)
+      if (!paras) return
+
+      paras.forEach(({ p }) => { p.textContent = '' })
+
+      const charMs  = m2 ? 40 : 26   // M2 slightly slower = more contemplative
+      const paraGap = 280
+      let   time    = m2 ? 380 : 60  // M2: short pause lets blur clear first
+      const timers: ReturnType<typeof setTimeout>[] = []
+
+      paras.forEach(({ p, text }) => {
+        /* reveal data-d children when their paragraph starts typing */
+        if (p.dataset.d !== undefined) {
+          const t = time
+          timers.push(setTimeout(() => p.classList.add('ch5-on'), t))
+        }
+        /* type each character cumulatively so order is always preserved */
+        for (let i = 0; i < text.length; i++) {
+          const c    = text[i]
+          const fire = time
+          time += charMs + Math.floor(Math.random() * Math.ceil(charMs * 0.5))
+          timers.push(setTimeout(() => { p.textContent += c }, fire))
+        }
+        time += paraGap
+      })
+
+      typingTimers.set(id, timers)
+    }
+
+    /* ── Memory flash ── */
     const FLASH_SRCS: (string | null)[] = [
       '/chapter3/backgrounds/city_night/city_base.png',
       '/chapter4/backgrounds/bg_night_room.png',
@@ -132,7 +185,7 @@ export default function Chapter5({ onComplete }: Props) {
     }
 
     /* ── Step navigation ── */
-    let current   = -1  // -1 = hint state
+    let current   = -1
     let animating = false
 
     function gid(id: string) { return document.getElementById(id) as HTMLElement | null }
@@ -140,35 +193,37 @@ export default function Chapter5({ onComplete }: Props) {
     const hintEl = gid('ch5-hint')
 
     function showBeat(i: number) {
-      const el = gid(BEATS[i])
+      const id = BEATS[i]
+      const el = gid(id)
       if (!el) return
       el.classList.add('ch5-on')
-      el.querySelectorAll<HTMLElement>('[data-d]').forEach(c =>
-        setTimeout(() => c.classList.add('ch5-on'), +(c.dataset.d ?? 0))
-      )
+      typeBeat(id, i >= M2_IDX)
       if (i === BEATS.length - 1) {
+        /* "You were just trying to breathe." — ~32 chars × 50ms avg + 380ms = ~2000ms */
         setTimeout(() => {
           const endEl = gid('ch5-end')
           if (endEl) endEl.classList.add('ch5-on')
           const btn = gid('ch5-next-btn')
           if (btn) btn.onclick = () => onCompleteRef.current()
-        }, 1500)
+        }, 2200)
       }
     }
 
     function hideBeat(i: number, cb: () => void) {
-      const el = gid(BEATS[i])
+      const id = BEATS[i]
+      const el = gid(id)
       if (!el) { cb(); return }
+      cancelTyping(id)
       el.classList.remove('ch5-on')
       el.querySelectorAll<HTMLElement>('[data-d]').forEach(c => c.classList.remove('ch5-on'))
-      setTimeout(cb, i >= M2_IDX ? 600 : 300)
+      setTimeout(cb, i >= M2_IDX ? 600 : 280)
     }
 
     function goTo(next: number) {
       if (animating) return
       if (next === current) return
       if (next < -1 || next >= BEATS.length) return
-      if (next < M2_IDX && current >= M2_IDX) return  // no going back to M1 from M2
+      if (next < M2_IDX && current >= M2_IDX) return
 
       animating = true
       const prev = current
@@ -190,22 +245,21 @@ export default function Chapter5({ onComplete }: Props) {
           })
         } else {
           showBeat(next)
-          setTimeout(() => { animating = false }, next >= M2_IDX ? 1400 : 650)
+          setTimeout(() => { animating = false }, next >= M2_IDX ? 1400 : 600)
         }
       }
 
       if (prev === -1) {
         hintEl?.classList.remove('ch5-on')
-        setTimeout(doShow, 300)
+        setTimeout(doShow, 280)
       } else {
         hideBeat(prev, doShow)
       }
     }
 
-    /* show hint after rain establishes */
     const hintTimer = setTimeout(() => hintEl?.classList.add('ch5-on'), 800)
 
-    /* ── Input handlers (same pattern as Ch2) ── */
+    /* ── Input handlers ── */
     const onWheel = (e: WheelEvent) => {
       e.preventDefault()
       if (animating) return
@@ -239,6 +293,7 @@ export default function Chapter5({ onComplete }: Props) {
 
     return () => {
       clearTimeout(hintTimer)
+      BEATS.forEach(id => cancelTyping(id))
       rain.innerHTML = ''
       fogPuffs.innerHTML = ''
       window.removeEventListener('wheel',      onWheel)
@@ -263,7 +318,6 @@ export default function Chapter5({ onComplete }: Props) {
 
       <div className="ch5-scroll">
 
-        {/* M1 beats */}
         <div className="ch5-beat" id="ch5-b1">
           <p className="ch5-t-calm">Then…</p>
         </div>
@@ -278,8 +332,8 @@ export default function Chapter5({ onComplete }: Props) {
 
         <div className="ch5-beat" id="ch5-b4">
           <p className="ch5-t-mono">Any% completion.</p>
-          <p className="ch5-t-mono" data-d="150">No tutorials.</p>
-          <p className="ch5-t-mono" data-d="300">No save points.</p>
+          <p className="ch5-t-mono" data-d="1">No tutorials.</p>
+          <p className="ch5-t-mono" data-d="1">No save points.</p>
         </div>
 
         <div className="ch5-beat" id="ch5-b7">
@@ -294,7 +348,6 @@ export default function Chapter5({ onComplete }: Props) {
           <p className="ch5-t-conf">a bit too hard.</p>
         </div>
 
-        {/* M2 beats */}
         <div className="ch5-beat-m2" id="ch5-b10">
           <p className="ch5-t-m2-soft">Somewhere in the middle…</p>
         </div>
