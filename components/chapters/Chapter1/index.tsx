@@ -113,10 +113,10 @@ export default function Chapter1({ onComplete }: Props) {
         alt="The City of Love"
         style={{
           position: 'absolute',
-          top: '18%',
+          top: 'calc(18% - 25vh)',
           left: '50%',
           transform: 'translateX(-50%)',
-          width: 'clamp(280px, 50vw, 700px)',
+          width: 'clamp(400px, 75vw, 1100px)',
           zIndex: 5,
           pointerEvents: 'none',
           opacity: currentBeat === INTRO_BEAT ? 1 : 0,
