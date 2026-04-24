@@ -118,6 +118,8 @@ export default function Chapter1({ onComplete }: Props) {
           width: 'clamp(400px, 75vw, 1100px)',
           zIndex: 5,
           pointerEvents: 'none',
+          opacity: phase === 'idle' ? 1 : 0,
+          transition: 'opacity 0.5s ease',
           filter: 'drop-shadow(0 0 18px rgba(0,0,0,0.9)) drop-shadow(0 0 40px rgba(0,0,0,0.7))',
         }}
       />
