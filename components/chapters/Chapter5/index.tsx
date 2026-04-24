@@ -31,19 +31,19 @@ function spawnRain(
 
 function spawnFogPuffs(container: HTMLDivElement) {
   container.innerHTML = ''
-  for (let i = 0; i < 13; i++) {
+  for (let i = 0; i < 16; i++) {
     const puff  = document.createElement('div')
     puff.className = 'ch5-fog-puff'
-    const w     = 100 + Math.random() * 180
+    const w     = 200 + Math.random() * 320          // 200–520px
     const h     = w * (0.45 + Math.random() * 0.35)
-    const top   = Math.random() * 88
-    const left  = -10 + Math.random() * 110
-    const dur   = 18 + Math.random() * 22
-    const delay = -(Math.random() * 20)
-    const blur  = 18 + Math.random() * 28
-    const op    = 0.18 + Math.random() * 0.22
-    const drift = (Math.random() > 0.5 ? 1 : -1) * (15 + Math.random() * 30)
-    const bob   = (Math.random() > 0.5 ? 1 : -1) * (3 + Math.random() * 8)
+    const top   = Math.random() * 90
+    const left  = -15 + Math.random() * 115
+    const dur   = 10 + Math.random() * 12            // 10–22s (more noticeable)
+    const delay = -(Math.random() * 12)
+    const blur  = 6 + Math.random() * 12             // 6–18px (keeps visible shape)
+    const op    = 0.38 + Math.random() * 0.28        // 0.38–0.66
+    const drift = (Math.random() > 0.5 ? 1 : -1) * (20 + Math.random() * 35)
+    const bob   = (Math.random() > 0.5 ? 1 : -1) * (4 + Math.random() * 10)
     puff.style.cssText = [
       `width:${w.toFixed(0)}px`, `height:${h.toFixed(0)}px`,
       `top:${top.toFixed(1)}%`, `left:${left.toFixed(1)}vw`,
