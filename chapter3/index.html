@@ -72,6 +72,28 @@
       opacity: 0;
       pointer-events: none;
     }
+
+    .bar-btn {
+      position: absolute;
+      bottom: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Caveat', cursive;
+      font-size: clamp(12px, 1.4vw, 20px);
+      font-weight: 700;
+      background: #F5EFE0;
+      color: #2A2118;
+      border: 2px solid #2A2118;
+      border-radius: 999px;
+      padding: 4px 14px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s, color 0.15s;
+      z-index: 10;
+    }
+    .bar-btn:hover { background: #2A2118; color: #F5EFE0; }
+    .bar-btn--locked { cursor: default; }
+    .bar-btn--locked:hover { background: #F5EFE0; color: #2A2118; }
   </style>
 </head>
 <body>
@@ -233,6 +255,94 @@
 
     // Kick off first beat after short delay
     setTimeout(advanceBeat, 600);
+
+    const openedBars = new Set();
+    let activeMessageEl = null;
+
+    function getRenderedRect(img) {
+      const iw = img.naturalWidth, ih = img.naturalHeight;
+      const cw = img.clientWidth,  ch = img.clientHeight;
+      const ir = iw / ih, cr = cw / ch;
+      let rw, rh, rx, ry;
+      if (ir > cr) { rw = cw; rh = cw / ir; rx = 0; ry = (ch - rh) / 2; }
+      else         { rh = ch; rw = ch * ir; ry = 0; rx = (cw - rw) / 2; }
+      return { x: rx, y: ry, w: rw, h: rh };
+    }
+
+    function computeBarRect(index, r) {
+      const col = index % BAR_GRID.cols;
+      const row = Math.floor(index / BAR_GRID.cols);
+      const bw  = (BAR_GRID.width  / BAR_GRID.cols) * r.w;
+      const bh  = (BAR_GRID.height / BAR_GRID.rows) * r.h;
+      return {
+        x: r.x + BAR_GRID.left * r.w + col * bw,
+        y: r.y + BAR_GRID.top  * r.h + row * bh,
+        w: bw, h: bh,
+      };
+    }
+
+    function initChocGame() {
+      const img = document.getElementById('chocBox');
+      const container = document.getElementById('barContainer');
+
+      function render() {
+        const r = getRenderedRect(img);
+        container.innerHTML = '';
+        container.style.pointerEvents = 'auto';
+
+        for (let i = 0; i < 8; i++) {
+          const br = computeBarRect(i, r);
+
+          const cell = document.createElement('div');
+          cell.className = 'bar-cell';
+          cell.id = `bar-cell-${i}`;
+          cell.style.cssText = `
+            position:absolute;
+            left:${br.x}px; top:${br.y}px;
+            width:${br.w}px; height:${br.h}px;
+            overflow:visible;
+          `;
+
+          // Unwrap image (hidden until bar is clicked)
+          const barImg = document.createElement('img');
+          barImg.id = `bar-img-${i}`;
+          barImg.style.cssText = 'display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:contain;';
+          cell.appendChild(barImg);
+
+          // Shimmer overlay
+          const shimmerWrap = document.createElement('div');
+          shimmerWrap.style.cssText = 'position:absolute;inset:0;overflow:hidden;pointer-events:none;border-radius:3px;';
+          const shimmerBar = document.createElement('div');
+          shimmerBar.className = `shimmer-${i}`;
+          shimmerBar.style.cssText = `
+            position:absolute;top:0;bottom:0;width:35%;
+            background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.55) 50%,transparent 100%);
+            transform:translateX(-150%) skewX(-20deg);
+            pointer-events:none;
+          `;
+          shimmerWrap.appendChild(shimmerBar);
+          cell.appendChild(shimmerWrap);
+
+          // Button
+          const btn = document.createElement('button');
+          btn.id = `bar-btn-${i}`;
+          btn.className = 'bar-btn' + (i === 7 ? ' bar-btn--locked' : '');
+          btn.textContent = i === 7 ? '🔒' : 'open';
+          btn.dataset.index = i;
+          cell.appendChild(btn);
+
+          // Hover
+          cell.addEventListener('mouseenter', () => onBarHover(i, true));
+          cell.addEventListener('mouseleave', () => onBarHover(i, false));
+          btn.addEventListener('click', (e) => { e.stopPropagation(); handleBarClick(i); });
+
+          container.appendChild(cell);
+        }
+      }
+
+      render();
+      window.addEventListener('resize', render);
+    }
 
     function startPhase2() {
       phase1Done = true;
