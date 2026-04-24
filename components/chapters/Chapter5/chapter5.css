@@ -41,16 +41,59 @@
 .ch5-fog {
   position: fixed; inset: 0; z-index: 2;
   pointer-events: none;
-  background: radial-gradient(ellipse at center, rgba(200,210,230,0.12) 0%, transparent 70%);
   backdrop-filter: blur(2px);
   opacity: 0;
+  overflow: hidden;
 }
 .ch5-root.ch5-m2 .ch5-fog {
-  animation: ch5Breathe 4s ease-in-out infinite;
+  animation: ch5Breathe 5s ease-in-out infinite;
 }
 @keyframes ch5Breathe {
-  0%, 100% { opacity: 0.04; }
-  50%       { opacity: 0.10; }
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1; }
+}
+
+/* ── Fog cloud layer 1 — large slow bank drifting left→right ── */
+.ch5-fog::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 90% 45% at 15% 65%, rgba(210,220,235,0.22) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 55% at 75% 30%, rgba(220,228,242,0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 110% 30% at 50% 85%, rgba(200,215,232,0.15) 0%, transparent 55%);
+  opacity: 0;
+  transition: opacity 2s ease;
+  animation: ch5FogDrift1 22s ease-in-out infinite;
+}
+.ch5-root.ch5-m2 .ch5-fog::before { opacity: 1; }
+
+/* ── Fog cloud layer 2 — medium band drifting right→left, offset timing ── */
+.ch5-fog::after {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 40% at 80% 55%, rgba(215,225,240,0.20) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 25% 25%, rgba(225,232,245,0.16) 0%, transparent 58%),
+    radial-gradient(ellipse 100% 35% at 55% 70%, rgba(205,218,235,0.14) 0%, transparent 55%);
+  opacity: 0;
+  transition: opacity 2.5s ease;
+  animation: ch5FogDrift2 30s ease-in-out infinite;
+}
+.ch5-root.ch5-m2 .ch5-fog::after { opacity: 1; }
+
+@keyframes ch5FogDrift1 {
+  0%   { transform: translateX(0)     translateY(0); }
+  25%  { transform: translateX(7vw)   translateY(-4vh); }
+  50%  { transform: translateX(12vw)  translateY(-2vh); }
+  75%  { transform: translateX(5vw)   translateY(3vh); }
+  100% { transform: translateX(0)     translateY(0); }
+}
+@keyframes ch5FogDrift2 {
+  0%   { transform: translateX(0)      translateY(0); }
+  30%  { transform: translateX(-9vw)   translateY(5vh); }
+  60%  { transform: translateX(-14vw)  translateY(2vh); }
+  80%  { transform: translateX(-6vw)   translateY(-3vh); }
+  100% { transform: translateX(0)      translateY(0); }
 }
 
 /* ── Memory flash overlay ── */
