@@ -157,6 +157,7 @@ export default function Chapter5({ onComplete }: Props) {
       if (i === BEATS.length - 1) {
         /* "You were just trying to breathe." — ~32 chars × 50ms avg + 380ms = ~2000ms */
         setTimeout(() => {
+          hintEl?.classList.remove('ch5-on')
           const endEl = gid('ch5-end')
           if (endEl) endEl.classList.add('ch5-on')
           const btn = gid('ch5-next-btn')
@@ -207,7 +208,6 @@ export default function Chapter5({ onComplete }: Props) {
       }
 
       if (prev === -1) {
-        hintEl?.classList.remove('ch5-on')
         setTimeout(doShow, 280)
       } else {
         hideBeat(prev, doShow)
@@ -268,7 +268,7 @@ export default function Chapter5({ onComplete }: Props) {
       <div className="ch5-fog" />
       <div className="ch5-fog-puffs" ref={fogPuffsRef} />
       <div className="ch5-hint" id="ch5-hint">
-        scroll to begin
+        scroll
         <span className="ch5-hint-arrow">↓</span>
       </div>
 
