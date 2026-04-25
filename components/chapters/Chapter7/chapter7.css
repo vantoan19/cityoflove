@@ -1,0 +1,114 @@
+/* ── Chapter 7 — No Script ────────────────────────── */
+
+.ch7-root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  background: #F4A7B9;
+  font-family: var(--font-caveat), cursive;
+}
+
+.ch7-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Scroll hint ─────────────────────────────────────── */
+.ch7-hint {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: clamp(14px, 1.8vw, 20px);
+  color: #5a3540;
+  text-align: center;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 10;
+  opacity: 0;
+}
+
+.ch7-hint-arrow {
+  display: block;
+  margin-top: 4px;
+  animation: ch7Bounce 1.5s ease-in-out infinite;
+}
+
+@keyframes ch7Bounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(7px); }
+}
+
+/* ── Beat blocks — stacked, one visible at a time ──── */
+.ch7-beat {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 15%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ch7-beat p {
+  font-size: clamp(24px, 3.5vw, 52px);
+  font-weight: 600;
+  line-height: 1.9;
+  color: #3a2028;
+  text-align: center;
+  margin: 0;
+}
+
+/* ── Typing cursor ───────────────────────────────────── */
+.ch7-beat p.ch7-typing::after {
+  content: '|';
+  margin-left: 1px;
+  animation: ch7CursorBlink 0.6s step-end infinite;
+}
+
+@keyframes ch7CursorBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ── Dialog card — Ch0 modal style ──────────────────── */
+/* GSAP owns the full transform (xPercent/yPercent + rotation + scale) — no transform in CSS */
+.ch7-dialog {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background: rgba(253, 250, 245, 0.97);
+  border: 1.5px solid #5a3540;
+  border-radius: 3px;
+  box-shadow: 3px 3px 0 rgba(90, 53, 64, 0.2);
+  padding: 32px 40px;
+  max-width: min(520px, 85vw);
+  z-index: 20;
+  font-family: var(--font-caveat), cursive;
+  text-align: center;
+}
+
+.ch7-dialog-line {
+  font-size: clamp(18px, 2.4vw, 30px);
+  font-weight: 600;
+  color: #3a2028;
+  line-height: 1.7;
+  margin: 0 0 8px;
+}
+
+.ch7-dialog-line.ch7-muted {
+  font-size: clamp(14px, 1.8vw, 22px);
+  font-weight: 400;
+  color: #5a3540;
+  margin-top: 16px;
+  margin-bottom: 0;
+}
