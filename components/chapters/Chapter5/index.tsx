@@ -336,7 +336,7 @@ export default function Chapter5({ onComplete }: Props) {
 
       <div className="ch5-end" id="ch5-end">
         <span className="ch5-end-label">Chapter 5</span>
-        <button className="ch5-next-btn" id="ch5-next-btn">Continue →</button>
+        <button className="ch5-next-btn" id="ch5-next-btn">Next Chapter →</button>
       </div>
     </div>
   )
