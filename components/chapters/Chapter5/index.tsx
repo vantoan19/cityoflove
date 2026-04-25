@@ -275,61 +275,61 @@ export default function Chapter5({ onComplete }: Props) {
       <div className="ch5-scroll">
 
         <div className="ch5-beat" id="ch5-b1">
-          <p className="ch5-t-calm">Then…</p>
+          <p className="ch5-t-m1">Then…</p>
         </div>
 
         <div className="ch5-beat" id="ch5-b2">
-          <p className="ch5-t-bold">We talked like we&rsquo;d always known each other</p>
+          <p className="ch5-t-m1">We talked like we&rsquo;d always known each other</p>
         </div>
 
         <div className="ch5-beat" id="ch5-b3">
-          <p className="ch5-t-hero">Every evening ran into the next</p>
+          <p className="ch5-t-m1">Every evening ran into the next</p>
         </div>
 
         <div className="ch5-beat" id="ch5-b4">
-          <p className="ch5-t-mono">We filled every silence</p>
-          <p className="ch5-t-mono" data-d="1">Every gap</p>
-          <p className="ch5-t-mono" data-d="1">Every still moment</p>
+          <p className="ch5-t-m1">We filled every silence</p>
+          <p className="ch5-t-m1" data-d="1">Every gap</p>
+          <p className="ch5-t-m1" data-d="1">Every still moment</p>
         </div>
 
         <div className="ch5-beat" id="ch5-b7">
-          <p className="ch5-t-bold">I might have pressed</p>
+          <p className="ch5-t-m1">I might have pressed</p>
         </div>
 
         <div className="ch5-beat ch5-skew" id="ch5-b8">
-          <p className="ch5-t-quote">&ldquo;fast forward&rdquo;</p>
+          <p className="ch5-t-m1">&ldquo;fast forward&rdquo;</p>
         </div>
 
         <div className="ch5-beat" id="ch5-b9">
-          <p className="ch5-t-conf">a bit too hard</p>
+          <p className="ch5-t-m1">a bit too hard</p>
         </div>
 
         <div className="ch5-beat-m2" id="ch5-b10">
-          <p className="ch5-t-m2-soft">Somewhere in the middle…</p>
+          <p className="ch5-t-m2">Somewhere in the middle…</p>
         </div>
 
         <div className="ch5-beat-m2" id="ch5-b11">
-          <p className="ch5-t-m2-main">something shifted</p>
+          <p className="ch5-t-m2">something shifted</p>
         </div>
 
         <div className="ch5-beat-m2" id="ch5-b12">
-          <p className="ch5-t-m2-soft">Not wrong</p>
+          <p className="ch5-t-m2">Not wrong</p>
         </div>
 
         <div className="ch5-beat-m2" id="ch5-b13">
-          <p className="ch5-t-m2-soft">Just…</p>
+          <p className="ch5-t-m2">Just…</p>
         </div>
 
         <div className="ch5-beat-m2" id="ch5-b14">
-          <p className="ch5-t-m2-key">too much, all at once</p>
+          <p className="ch5-t-m2">too much, all at once</p>
         </div>
 
         <div className="ch5-beat-m2 ch5-no-blur" id="ch5-b15">
-          <p className="ch5-t-m2-main">You weren&rsquo;t pulling away</p>
+          <p className="ch5-t-m2">You weren&rsquo;t pulling away</p>
         </div>
 
         <div className="ch5-beat-m2 ch5-no-blur" id="ch5-b16">
-          <p className="ch5-t-m2-core">You were just trying to breathe</p>
+          <p className="ch5-t-m2">You were just trying to breathe</p>
         </div>
 
       </div>
