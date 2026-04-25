@@ -325,17 +325,17 @@ export default function Chapter5({ onComplete }: Props) {
         </div>
 
         <div className="ch5-beat" id="ch5-b2">
-          <p className="ch5-t-bold">we did something impressive.</p>
+          <p className="ch5-t-bold">We talked like we&rsquo;d always known each other</p>
         </div>
 
         <div className="ch5-beat" id="ch5-b3">
-          <p className="ch5-t-hero">We speedran a relationship.</p>
+          <p className="ch5-t-hero">Every evening ran into the next</p>
         </div>
 
         <div className="ch5-beat" id="ch5-b4">
-          <p className="ch5-t-mono">Any% completion.</p>
-          <p className="ch5-t-mono" data-d="1">No tutorials.</p>
-          <p className="ch5-t-mono" data-d="1">No save points.</p>
+          <p className="ch5-t-mono">We filled every silence</p>
+          <p className="ch5-t-mono" data-d="1">Every gap</p>
+          <p className="ch5-t-mono" data-d="1">Every still moment</p>
         </div>
 
         <div className="ch5-beat" id="ch5-b7">
@@ -347,7 +347,7 @@ export default function Chapter5({ onComplete }: Props) {
         </div>
 
         <div className="ch5-beat" id="ch5-b9">
-          <p className="ch5-t-conf">a bit too hard.</p>
+          <p className="ch5-t-conf">a bit too hard</p>
         </div>
 
         <div className="ch5-beat-m2" id="ch5-b10">
@@ -355,11 +355,11 @@ export default function Chapter5({ onComplete }: Props) {
         </div>
 
         <div className="ch5-beat-m2" id="ch5-b11">
-          <p className="ch5-t-m2-main">things got a little blurry.</p>
+          <p className="ch5-t-m2-main">something shifted</p>
         </div>
 
         <div className="ch5-beat-m2" id="ch5-b12">
-          <p className="ch5-t-m2-soft">Not wrong.</p>
+          <p className="ch5-t-m2-soft">Not wrong</p>
         </div>
 
         <div className="ch5-beat-m2" id="ch5-b13">
@@ -367,15 +367,15 @@ export default function Chapter5({ onComplete }: Props) {
         </div>
 
         <div className="ch5-beat-m2" id="ch5-b14">
-          <p className="ch5-t-m2-key">too much, too fast.</p>
+          <p className="ch5-t-m2-key">too much, all at once</p>
         </div>
 
         <div className="ch5-beat-m2 ch5-no-blur" id="ch5-b15">
-          <p className="ch5-t-m2-main">You weren&rsquo;t pulling away.</p>
+          <p className="ch5-t-m2-main">You weren&rsquo;t pulling away</p>
         </div>
 
         <div className="ch5-beat-m2 ch5-no-blur" id="ch5-b16">
-          <p className="ch5-t-m2-core">You were just trying to breathe.</p>
+          <p className="ch5-t-m2-core">You were just trying to breathe</p>
         </div>
 
       </div>
