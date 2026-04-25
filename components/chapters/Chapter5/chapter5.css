@@ -96,9 +96,6 @@
   width: 100%; max-width: 620px;
   padding: 22px 32px;
   text-align: center;
-  background: rgba(248, 250, 255, 0.88);
-  border-radius: 10px;
-  backdrop-filter: blur(6px);
   opacity: 0; transform: translateY(20px);
   transition: opacity 0.5s cubic-bezier(.22,.61,.36,1),
               transform 0.5s cubic-bezier(.22,.61,.36,1);
@@ -117,9 +114,6 @@
   width: 100%; max-width: 620px;
   padding: 22px 32px;
   text-align: center;
-  background: rgba(240, 246, 255, 0.82);
-  border-radius: 10px;
-  backdrop-filter: blur(8px);
   opacity: 0; transform: translateY(24px);
   filter: blur(4px);
   transition: opacity 1.2s cubic-bezier(.22,.61,.36,1),
@@ -159,11 +153,15 @@
 .ch5-t-m2-key  { font-size:clamp(20px,2.5vw,30px); font-weight:500; line-height:1.8; color:#0d1117; }
 .ch5-t-m2-core { font-size:clamp(20px,2.5vw,30px); font-weight:400; line-height:1.9; color:#0d1117; }
 
-/* ── Paragraph reset ── */
+/* ── Paragraph reset + white glow to read on dark bg ── */
 .ch5-beat p,
 .ch5-beat-m2 p {
   margin: 0;
   padding: 0;
+  text-shadow:
+    0 0 18px rgba(255,255,255,0.90),
+    0 0  8px rgba(255,255,255,0.70),
+    0  1px 3px rgba(255,255,255,0.50);
 }
 
 /* ── Scroll hint ── */
