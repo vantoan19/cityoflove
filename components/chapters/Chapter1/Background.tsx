@@ -123,7 +123,7 @@ export default function Background() {
   return (
     <canvas
       ref={canvasRef}
-      style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
+      style={{ position: 'absolute', inset: 0, pointerEvents: 'none', filter: 'brightness(1.25) saturate(1.1)' }}
     />
   )
 }
