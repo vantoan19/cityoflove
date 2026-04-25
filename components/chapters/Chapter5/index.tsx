@@ -16,7 +16,7 @@ function spawnRain(
     const dur = minDur + Math.random() * (maxDur - minDur)
     const op  = minOp  + Math.random() * (maxOp  - minOp)
     const dx  = -(Math.random() * dxRange)
-    const h   = 20 + Math.random() * 18
+    const h   = 28 + Math.random() * 28
     drop.style.cssText = [
       `left:${Math.random() * 110 - 5}vw`,
       `height:${h}px`,
@@ -80,7 +80,7 @@ export default function Chapter5({ onComplete }: Props) {
     const fogPuffs  = fogPuffsRef.current
     const flash     = flashRef.current
 
-    spawnRain(rain, 200, 0.45, 0.75, 0.5, 0.9, 45)
+    spawnRain(rain, 380, 0.22, 0.42, 0.6, 1.0, 65)
 
     /* ── Typing engine ── */
     type BeatPara = { p: HTMLElement; text: string }
@@ -181,7 +181,7 @@ export default function Chapter5({ onComplete }: Props) {
 
     function activateM2() {
       root.classList.add('ch5-m2')
-      spawnRain(rain, 60, 1.6, 2.2, 0.2, 0.40, 50)
+      spawnRain(rain, 120, 0.9, 1.4, 0.25, 0.55, 60)
       spawnFogPuffs(fogPuffs)
     }
 
