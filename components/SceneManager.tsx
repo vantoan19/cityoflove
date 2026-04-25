@@ -10,6 +10,7 @@ const Chapter0 = dynamic(() => import('./chapters/Chapter0'), { ssr: false })
 const Chapter1 = dynamic(() => import('./chapters/Chapter1'), { ssr: false })
 const Chapter2 = dynamic(() => import('./chapters/Chapter2'), { ssr: false })
 const Chapter3 = dynamic(() => import('./chapters/Chapter3'), { ssr: false })
+const Chapter4 = dynamic(() => import('./chapters/Chapter4'), { ssr: false })
 const Chapter5 = dynamic(() => import('./chapters/Chapter5'), { ssr: false })
 const Chapter6 = dynamic(() => import('./chapters/Chapter6'), { ssr: false })
 const Chapter7 = dynamic(() => import('./chapters/Chapter7'), { ssr: false })
@@ -92,6 +93,11 @@ export default function SceneManager() {
           <Chapter3 onComplete={() => advanceChapter(4)} />
         </div>
       )}
+      {currentChapter === 4 && (
+        <div data-testid="chapter-4" style={{ width: '100%', height: '100%' }}>
+          <Chapter4 onComplete={() => advanceChapter(5)} />
+        </div>
+      )}
       {currentChapter === 5 && (
         <div data-testid="chapter-5" style={{ width: '100%', height: '100%' }}>
           <Chapter5 onComplete={() => advanceChapter(6)} />
@@ -107,7 +113,7 @@ export default function SceneManager() {
           <Chapter7 onComplete={() => {}} />
         </div>
       )}
-      {currentChapter > 3 && currentChapter !== 5 && currentChapter !== 6 && currentChapter !== 7 && (
+      {currentChapter > 4 && currentChapter !== 5 && currentChapter !== 6 && currentChapter !== 7 && (
         <div data-testid={`chapter-stub-${currentChapter}`} style={{ width: '100%', height: '100%' }}>
           <ChapterStub
             chapterNumber={currentChapter}
