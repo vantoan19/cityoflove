@@ -242,7 +242,7 @@ export default function Chapter5({ onComplete }: Props) {
             setTimeout(() => {
               showBeat(next)
               setTimeout(() => { animating = false }, 1400)
-            }, 300)
+            }, 900)
           })
         } else {
           showBeat(next)
@@ -306,7 +306,8 @@ export default function Chapter5({ onComplete }: Props) {
 
   return (
     <div className="ch5-root" ref={rootRef}>
-      <div className="ch5-bg" />
+      <div className="ch5-bg-rain" />
+      <div className="ch5-bg-fog" />
       <div className="ch5-rain" ref={rainRef} />
       <div className="ch5-fog" />
       <div className="ch5-fog-puffs" ref={fogPuffsRef} />

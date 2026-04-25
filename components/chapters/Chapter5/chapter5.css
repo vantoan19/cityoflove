@@ -9,16 +9,20 @@
   background: #0D1117;
 }
 
-/* ── Background image ── */
-.ch5-bg {
+/* ── Background layers — two divs so we can crossfade between them ── */
+.ch5-bg-rain {
   position: fixed; inset: 0; z-index: 0;
-  background-size: cover; background-position: center;
-  background-image: url('/chapter5/bg_rainy_forest.png');
+  background: url('/chapter5/bg_rainy_forest.png') center / cover no-repeat;
   pointer-events: none;
 }
-.ch5-root.ch5-m2 .ch5-bg {
-  background-image: url('/chapter5/bg_foggy_forest.png');
+.ch5-bg-fog {
+  position: fixed; inset: 0; z-index: 0;
+  background: url('/chapter5/bg_foggy_forest.png') center / cover no-repeat;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 4s ease;
 }
+.ch5-root.ch5-m2 .ch5-bg-fog { opacity: 1; }
 
 /* ── Rain layer ── */
 .ch5-rain {
