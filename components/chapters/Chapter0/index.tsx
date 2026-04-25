@@ -25,7 +25,7 @@ const OPENING_FRAMES = [
   '/loveletter/opening/frame7.png',
 ]
 
-const OPENING_DURATIONS = [120, 120, 120, 120, 150, 150, 150]
+const OPENING_DURATIONS = [200, 200, 200, 200, 250, 250, 250]
 
 const CORRECT_PASSWORD = '19/03/2026'
 
