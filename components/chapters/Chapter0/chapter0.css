@@ -1,0 +1,171 @@
+/* ── Chapter 0 — Love Letter Gate ───────────────────────── */
+
+.ch0-root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #F4A7B9;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Letter image — natural size, centered, zooms on pivot */
+.ch0-letter-img {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-drag: none;
+  transform: scale(1);
+  transform-origin: 50% 36%;
+  transition: transform 900ms ease-in-out;
+}
+
+.ch0-letter-img.ch0-zooming {
+  transform: scale(6);
+}
+
+/* ── Hint ───────────────────────────────────────────────── */
+.ch0-hint {
+  position: fixed;
+  bottom: 48px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-caveat), cursive;
+  font-size: clamp(18px, 2.2vw, 26px);
+  font-weight: 600;
+  color: #5a3540;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  animation: ch0-hint-in 0.5s ease forwards;
+  animation-delay: 1s;
+}
+
+/* ── White fade-in overlay (zoom phase) ─────────────────── */
+.ch0-white-overlay {
+  position: fixed;
+  inset: 0;
+  background: #fff;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.ch0-white-overlay.ch0-fade-in {
+  opacity: 1;
+  transition: opacity 500ms ease-in-out;
+  transition-delay: 400ms;
+}
+
+/* ── Password modal ─────────────────────────────────────── */
+.ch0-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.ch0-modal {
+  background: rgba(253, 250, 245, 0.97);
+  border: 1.5px solid #5a3540;
+  border-radius: 3px;
+  box-shadow: 3px 3px 0 rgba(90, 53, 64, 0.2);
+  padding: 32px 36px;
+  max-width: 440px;
+  width: 90%;
+  font-family: var(--font-caveat), cursive;
+  color: #3a2028;
+  text-align: center;
+  animation: ch0-modal-in 200ms ease-out forwards;
+}
+
+.ch0-modal.ch0-closing {
+  animation: ch0-modal-out 200ms ease-in forwards;
+}
+
+.ch0-modal p {
+  font-size: clamp(18px, 2.4vw, 24px);
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+/* ── Input ──────────────────────────────────────────────── */
+.ch0-input {
+  width: 100%;
+  font-family: var(--font-caveat), cursive;
+  font-size: clamp(20px, 2.6vw, 26px);
+  font-weight: 600;
+  color: #3a2028;
+  background: rgba(253, 250, 245, 0.9);
+  border: 1.5px solid #5a3540;
+  border-radius: 3px;
+  padding: 8px 14px;
+  text-align: center;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+  margin-top: 8px;
+}
+
+.ch0-input.ch0-input-error {
+  border-color: #c0392b;
+  animation: ch0-shake 0.4s ease;
+}
+
+.ch0-error-text {
+  color: #c0392b;
+  font-family: var(--font-caveat), cursive;
+  font-size: clamp(14px, 1.8vw, 18px);
+  margin-top: 6px;
+  min-height: 24px;
+}
+
+/* ── Submit button ──────────────────────────────────────── */
+.ch0-btn {
+  display: inline-block;
+  margin-top: 14px;
+  font-family: var(--font-caveat), cursive;
+  font-size: clamp(18px, 2.4vw, 26px);
+  font-weight: 600;
+  color: #5a3540;
+  background: rgba(253, 250, 245, 0.85);
+  border: 1.5px solid #5a3540;
+  border-radius: 3px;
+  padding: 8px 28px;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 rgba(90, 53, 64, 0.18);
+  transition: background 0.2s, color 0.2s;
+}
+
+.ch0-btn:hover  { background: #5a3540; color: #fdfaf5; }
+.ch0-btn:active { transform: scale(0.96); }
+
+/* ── Keyframes ──────────────────────────────────────────── */
+
+@keyframes ch0-hint-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes ch0-modal-in {
+  from { transform: rotate(-0.5deg) scale(0.85); opacity: 0; }
+  to   { transform: rotate(-0.5deg) scale(1);    opacity: 1; }
+}
+
+@keyframes ch0-modal-out {
+  from { transform: rotate(-0.5deg) scale(1);    opacity: 1; }
+  to   { transform: rotate(-0.5deg) scale(0.85); opacity: 0; }
+}
+
+@keyframes ch0-shake {
+  0%,  100% { transform: translateX(0);   }
+  20%        { transform: translateX(-6px); }
+  40%        { transform: translateX(6px);  }
+  60%        { transform: translateX(-4px); }
+  80%        { transform: translateX(4px);  }
+}
