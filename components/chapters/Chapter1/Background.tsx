@@ -91,7 +91,7 @@ export default function Background() {
         const w = img.naturalWidth * scale
         const h = img.naturalHeight * scale
         const tx = l.animX ? l.animX(elapsed, cw) : 0
-        ctx.filter = 'none'
+        ctx.filter = i === 2 ? 'brightness(1.5)' : 'none'
         ctx.drawImage(img, (cw - w) / 2 + tx, (ch - h) / 2, w, h)
       })
       ctx.filter = 'none'

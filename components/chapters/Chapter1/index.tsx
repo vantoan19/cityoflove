@@ -94,7 +94,7 @@ export default function Chapter1({ onComplete }: Props) {
         transform: cameraTransform,
         transformOrigin: '50% 85%',
         transition: 'transform 0.7s cubic-bezier(0.4, 0, 0.2, 1)',
-        filter: 'brightness(1.5)',
+        filter: 'brightness(1.1)',
       }}>
         <Background />
         <Characters
