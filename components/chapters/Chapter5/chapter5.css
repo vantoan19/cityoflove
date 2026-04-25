@@ -26,9 +26,9 @@
   pointer-events: none; overflow: hidden;
 }
 .ch5-drop {
-  position: absolute; top: -20px;
-  width: 1.5px; border-radius: 2px;
-  background: rgba(150, 170, 200, 0.6);
+  position: absolute; top: -30px;
+  width: 2px; border-radius: 2px;
+  background: rgba(150, 170, 200, 0.7);
   animation: ch5RainFall linear infinite;
 }
 @keyframes ch5RainFall {
