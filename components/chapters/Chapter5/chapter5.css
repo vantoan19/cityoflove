@@ -5,7 +5,7 @@
   width: 100%; height: 100%;
   overflow: hidden;
   font-family: 'Poppins', 'Inter', sans-serif;
-  color: #F0F0F0;
+  color: #111111;
   background: #0D1117;
 }
 
@@ -94,8 +94,11 @@
 .ch5-beat {
   grid-area: 1 / 1;
   width: 100%; max-width: 620px;
-  padding: 0 28px;
+  padding: 22px 32px;
   text-align: center;
+  background: rgba(248, 250, 255, 0.88);
+  border-radius: 10px;
+  backdrop-filter: blur(6px);
   opacity: 0; transform: translateY(20px);
   transition: opacity 0.5s cubic-bezier(.22,.61,.36,1),
               transform 0.5s cubic-bezier(.22,.61,.36,1);
@@ -112,8 +115,11 @@
 .ch5-beat-m2 {
   grid-area: 1 / 1;
   width: 100%; max-width: 620px;
-  padding: 0 28px;
+  padding: 22px 32px;
   text-align: center;
+  background: rgba(240, 246, 255, 0.82);
+  border-radius: 10px;
+  backdrop-filter: blur(8px);
   opacity: 0; transform: translateY(24px);
   filter: blur(4px);
   transition: opacity 1.2s cubic-bezier(.22,.61,.36,1),
@@ -140,25 +146,24 @@
 .ch5-beat-m2 [data-d].ch5-on { opacity: 1; transform: none; }
 
 /* ── M1 Typography ── */
-.ch5-t-calm  { font-size:clamp(18px,2.2vw,26px); font-weight:400; font-style:italic; line-height:1.7; color:#D0D8E8; }
-.ch5-t-bold  { font-size:clamp(20px,2.6vw,30px); font-weight:600; line-height:1.5; }
-.ch5-t-hero  { font-size:clamp(26px,3.5vw,44px); font-weight:700; line-height:1.3; }
-.ch5-t-mono  { font-family:'JetBrains Mono','Courier New',monospace; font-size:clamp(14px,1.7vw,19px); font-weight:400; color:#A8C0D8; letter-spacing:0.03em; }
-.ch5-t-quote { font-size:clamp(22px,2.9vw,36px); font-weight:700; line-height:1.4; }
-.ch5-t-conf  { font-size:clamp(16px,2vw,22px); font-weight:400; font-style:italic; color:#B0C4D8; line-height:1.7; }
+.ch5-t-calm  { font-size:clamp(18px,2.2vw,26px); font-weight:400; font-style:italic; line-height:1.7; color:#2a3555; }
+.ch5-t-bold  { font-size:clamp(20px,2.6vw,30px); font-weight:600; line-height:1.5; color:#111111; }
+.ch5-t-hero  { font-size:clamp(26px,3.5vw,44px); font-weight:700; line-height:1.3; color:#0d1117; }
+.ch5-t-mono  { font-family:'JetBrains Mono','Courier New',monospace; font-size:clamp(14px,1.7vw,19px); font-weight:400; color:#1a4a6b; letter-spacing:0.03em; }
+.ch5-t-quote { font-size:clamp(22px,2.9vw,36px); font-weight:700; line-height:1.4; color:#111111; }
+.ch5-t-conf  { font-size:clamp(16px,2vw,22px); font-weight:400; font-style:italic; color:#3a4a6a; line-height:1.7; }
 
 /* ── M2 Typography ── */
-.ch5-t-m2-main { font-size:clamp(20px,2.5vw,30px); font-weight:400; line-height:1.8; color:#E8ECF0; }
-.ch5-t-m2-soft { font-size:clamp(16px,1.9vw,22px); font-weight:400; font-style:italic; line-height:1.9; color:#C8D4E0; }
-.ch5-t-m2-key  { font-size:clamp(20px,2.5vw,30px); font-weight:500; line-height:1.8; color:#E8ECF0; }
-.ch5-t-m2-core { font-size:clamp(20px,2.5vw,30px); font-weight:400; line-height:1.9; color:#EEF2F6; }
+.ch5-t-m2-main { font-size:clamp(20px,2.5vw,30px); font-weight:400; line-height:1.8; color:#111111; }
+.ch5-t-m2-soft { font-size:clamp(16px,1.9vw,22px); font-weight:400; font-style:italic; line-height:1.9; color:#2a3555; }
+.ch5-t-m2-key  { font-size:clamp(20px,2.5vw,30px); font-weight:500; line-height:1.8; color:#0d1117; }
+.ch5-t-m2-core { font-size:clamp(20px,2.5vw,30px); font-weight:400; line-height:1.9; color:#0d1117; }
 
-/* ── Text shadow keeps beats readable over any background ── */
+/* ── Paragraph reset ── */
 .ch5-beat p,
 .ch5-beat-m2 p {
   margin: 0;
   padding: 0;
-  text-shadow: 0 2px 16px rgba(0,5,15,0.92), 0 0 40px rgba(0,5,15,0.55);
 }
 
 /* ── Scroll hint ── */
