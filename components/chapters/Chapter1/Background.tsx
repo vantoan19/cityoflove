@@ -83,7 +83,7 @@ export default function Background() {
 
       ctx.clearRect(0, 0, cw, ch)
 
-      // Draw background layers
+      // Draw background layers — sky (i=0) at natural brightness, rest boosted
       LAYERS.forEach((l, i) => {
         const img = layerImgs[i][frameIdx[i]]
         if (!img.complete || img.naturalWidth === 0) return
@@ -91,8 +91,10 @@ export default function Background() {
         const w = img.naturalWidth * scale
         const h = img.naturalHeight * scale
         const tx = l.animX ? l.animX(elapsed, cw) : 0
+        ctx.filter = i === 0 ? 'none' : 'brightness(1.25) saturate(1.1)'
         ctx.drawImage(img, (cw - w) / 2 + tx, (ch - h) / 2, w, h)
       })
+      ctx.filter = 'none'
 
       // Wind streaks
       ctx.globalAlpha = 0.07
@@ -123,7 +125,7 @@ export default function Background() {
   return (
     <canvas
       ref={canvasRef}
-      style={{ position: 'absolute', inset: 0, pointerEvents: 'none', filter: 'brightness(1.25) saturate(1.1)' }}
+      style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
     />
   )
 }
