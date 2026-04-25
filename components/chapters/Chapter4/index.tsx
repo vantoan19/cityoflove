@@ -59,7 +59,7 @@ export default function Chapter4({ onComplete }: Props) {
         [1,92,18,4.4],[2,18,82,2.0],[1.5,42,95,3.3],
       ]
       extra.forEach(([w, t, l, tw], i) => {
-        setTimeout(() => {
+        trackTimeout(() => {
           const d = document.createElement('div')
           d.className = 'ch4-star-dot'
           d.style.cssText = `width:${w}px;height:${w}px;top:${t}%;left:${l}%;--tw:${tw}s;opacity:0;transition:opacity 1s`
@@ -67,6 +67,15 @@ export default function Chapter4({ onComplete }: Props) {
           requestAnimationFrame(() => requestAnimationFrame(() => { d.style.opacity = '1' }))
         }, i * 160)
       })
+    }
+
+    const liveSparkles = new Set<HTMLElement>()
+    const effectTimers = new Set<ReturnType<typeof setTimeout>>()
+
+    function trackTimeout(fn: () => void, ms: number) {
+      const t = setTimeout(() => { effectTimers.delete(t); fn() }, ms)
+      effectTimers.add(t)
+      return t
     }
 
     function launchSparkles(
@@ -96,7 +105,11 @@ export default function Chapter4({ onComplete }: Props) {
           animation:ch4SparkleFly ${(.9 + Math.random() * .5).toFixed(2)}s ${i * 75}ms forwards;
         `
         document.body.appendChild(s)
-        s.addEventListener('animationend', () => s.remove())
+        liveSparkles.add(s)
+        s.addEventListener('animationend', () => {
+          s.remove()
+          liveSparkles.delete(s)
+        })
       })
     }
 
@@ -173,22 +186,22 @@ export default function Chapter4({ onComplete }: Props) {
       if (zoneEntry) setZone(zoneEntry.zone, zoneEntry.videoId, zoneEntry.glow)
 
       if (id === 'ch4-b1') {
-        setTimeout(() => {
+        trackTimeout(() => {
           root.querySelectorAll<HTMLElement>('.ch4-dk').forEach((d, j) =>
-            setTimeout(() => d.classList.add('ch4-on'), j * 400)
+            trackTimeout(() => d.classList.add('ch4-on'), j * 400)
           )
         }, 700)
       }
 
       if (id === 'ch4-b4') {
         const win = el.querySelector<HTMLElement>('.ch4-stars-win')
-        if (win) setTimeout(() => moreStars(win), 900)
+        if (win) trackTimeout(() => moreStars(win), 900)
       }
 
       if (id === 'ch4-b14') {
         gid('ch4-dk-heart')?.classList.add('ch4-on')
         gid('ch4-warm-glow')?.classList.add('ch4-on')
-        setTimeout(() => {
+        trackTimeout(() => {
           const laugh = el.querySelector<HTMLElement>('.ch4-t-laugh')
           if (laugh) launchSparkles(laugh,
             ['#D4756B','#FFD3B6','#FFBFA0','#FFB347'],
@@ -198,13 +211,13 @@ export default function Chapter4({ onComplete }: Props) {
 
       if (id === 'ch4-b18') {
         const sw = el.querySelector<HTMLElement>('.ch4-spark-w')
-        if (sw) setTimeout(() => launchSparkles(sw,
+        if (sw) trackTimeout(() => launchSparkles(sw,
           ['#FFD3B6','#E6E6FA','#A8D8EA'],
           ['✦','✧','✦','✧','✦','✧','✦'], 35, 72), 400)
 
         if (!endShown) {
           endShown = true
-          setTimeout(() => {
+          trackTimeout(() => {
             const endEl = gid('ch4-end')
             if (endEl) endEl.classList.add('ch4-on')
             const btn = gid('ch4-next-btn')
@@ -289,6 +302,10 @@ export default function Chapter4({ onComplete }: Props) {
     return () => {
       clearTimeout(hintTimer)
       BEATS.forEach(id => cancelTyping(id))
+      effectTimers.forEach(clearTimeout)
+      effectTimers.clear()
+      liveSparkles.forEach(s => s.remove())
+      liveSparkles.clear()
       window.removeEventListener('wheel',      onWheel)
       window.removeEventListener('touchstart', onTouchStart)
       window.removeEventListener('touchend',   onTouchEnd)
