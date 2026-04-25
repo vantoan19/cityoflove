@@ -26,11 +26,9 @@ export default function Chapter7({ onComplete }: Props) {
 
     const beatEls = Array.from(root.querySelectorAll<HTMLElement>('.ch7-beat'))
 
+    // Clear initial text — MESSAGES constant is the authoritative source for typing
     beatEls.forEach(el => {
-      el.querySelectorAll<HTMLElement>('p').forEach(p => {
-        p.dataset.full = p.textContent ?? ''
-        p.textContent = ''
-      })
+      el.querySelectorAll<HTMLElement>('p').forEach(p => { p.textContent = '' })
     })
 
     const typingTimers: (ReturnType<typeof setTimeout> | undefined)[] =
@@ -63,21 +61,23 @@ export default function Chapter7({ onComplete }: Props) {
       const el = beatEls[i]
       if (!el) return
       const paragraphs = Array.from(el.querySelectorAll<HTMLElement>('p'))
+      const lines      = MESSAGES[i]?.lines ?? []
       paragraphs.forEach(p => { p.textContent = '' })
 
       let lineIdx = 0
       let charIdx = 0
 
       function tick() {
-        if (lineIdx >= paragraphs.length) {
+        if (lineIdx >= lines.length) {
           paragraphs.forEach(p => p.classList.remove('ch7-typing'))
           onDone?.()
           return
         }
         const p    = paragraphs[lineIdx]
-        const full = p.dataset.full ?? ''
+        const full = lines[lineIdx]
+        if (!p) { lineIdx++; charIdx = 0; typingTimers[i] = setTimeout(tick, 180); return }
         if (charIdx === 0) {
-          if (lineIdx > 0) paragraphs[lineIdx - 1].classList.remove('ch7-typing')
+          if (lineIdx > 0) paragraphs[lineIdx - 1]?.classList.remove('ch7-typing')
           p.classList.add('ch7-typing')
         }
         if (charIdx < full.length) {
