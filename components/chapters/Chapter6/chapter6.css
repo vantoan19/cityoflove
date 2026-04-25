@@ -4,19 +4,20 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  display: flex;
   position: relative;
   background: #fdf8f0;
   font-family: var(--font-caveat), cursive;
 }
 
-/* ── Left: letter column ────────────────────────────────── */
+/* ── Left: letter column (overlay, 1/2 width) ──────────── */
 .ch6-letter-col {
-  width: 55%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 50%;
   height: 100%;
-  position: relative;
   overflow: hidden;
-  flex-shrink: 0;
+  z-index: 2;
 }
 
 .ch6-letter {
@@ -28,17 +29,44 @@
   will-change: transform;
 }
 
-/* ── Message blocks — positioned absolutely by JS ── */
-.ch6-message {
+/* ── Sketch divider on right edge of letter column ──────── */
+.ch6-divider {
   position: absolute;
-  left: 10%;
-  width: 80%;
-  opacity: 0;
-  text-align: center;
+  top: -2%;
+  left: calc(50% - 2px);
+  width: 5px;
+  height: 104%;
+  background: rgba(90, 52, 40, 0.55);
+  filter: url(#ch6-sketch-edge);
+  z-index: 3;
   pointer-events: none;
 }
 
-.ch6-message p {
+/* ── Typing cursor ──────────────────────────────────────── */
+.ch6-beat p.ch6-typing::after {
+  content: '|';
+  margin-left: 1px;
+  animation: ch6CursorBlink 0.6s step-end infinite;
+}
+@keyframes ch6CursorBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ── Beat blocks — stacked, one visible at a time ── */
+.ch6-beat {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ch6-beat p {
   font-size: clamp(22px, 3vw, 44px);
   font-weight: 600;
   line-height: 1.9;
@@ -47,22 +75,16 @@
   margin: 0;
 }
 
-.ch6-message p.ch6-emph {
+.ch6-beat p.ch6-emph {
   font-size: clamp(26px, 3.6vw, 52px);
   font-weight: 700;
 }
 
-.ch6-message p.ch6-big {
-  font-size: clamp(30px, 4.2vw, 62px);
-  font-weight: 700;
-}
-
-/* ── Right: sprout column ───────────────────────────────── */
+/* ── Background: sprout full-screen ────────────────────── */
 .ch6-sprout-col {
-  width: 45%;
-  height: 100%;
-  position: relative;
-  flex-shrink: 0;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
 }
 
 .ch6-sprout-img {
@@ -85,7 +107,7 @@
 .ch6-hint {
   position: absolute;
   bottom: 40px;
-  left: 27.5%;
+  left: 50%;
   transform: translateX(-50%);
   font-size: clamp(14px, 1.8vw, 20px);
   color: #5a3540;
@@ -93,7 +115,7 @@
   pointer-events: none;
   white-space: nowrap;
   z-index: 10;
-  transition: opacity 0.4s ease;
+  opacity: 0;
 }
 .ch6-hint-arrow {
   display: block;
@@ -109,7 +131,7 @@
 .ch6-next-btn {
   position: absolute;
   bottom: 40px;
-  left: 27.5%;
+  left: 50%;
   transform: translateX(-50%) rotate(-0.4deg);
   font-family: var(--font-caveat), cursive;
   font-size: clamp(16px, 2.2vw, 26px);

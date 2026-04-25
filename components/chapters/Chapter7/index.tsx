@@ -19,111 +19,78 @@ function drawSketchBg(canvas: HTMLCanvasElement) {
   const W   = canvas.width
   const H   = canvas.height
   const r   = (a: number, b: number) => a + Math.random() * (b - a)
-  const ri  = (a: number, b: number) => Math.floor(r(a, b + 1))
 
-  // pink fill
   ctx.fillStyle = '#F4A7B9'
   ctx.fillRect(0, 0, W, H)
 
   ctx.lineCap  = 'round'
   ctx.lineJoin = 'round'
 
-  // ── scattered short strokes (main body of the sketch texture) ──────
-  for (let i = 0; i < 900; i++) {
-    const x     = r(-20, W + 20)
-    const y     = r(-20, H + 20)
-    const len   = r(6, 55)
-    const angle = r(0, Math.PI * 2)
-    const wobble = r(3, 9)
+  // ── directional crayon passes — long sweeping strokes, mostly horizontal ──
+  // Each pass has a dominant angle (like pressing crayon side across paper).
+  // Strokes are dense, long, and slightly curved — matching the sprout background.
+  const passes = [
+    { angle: 0.04,  count: 55, lenMin: 180, lenMax: 420, wMin: 3.5, wMax: 6.5, aMin: 0.08, aMax: 0.18, color: '#9a3555' },
+    { angle: -0.06, count: 50, lenMin: 160, lenMax: 380, wMin: 3.0, wMax: 5.5, aMin: 0.06, aMax: 0.15, color: '#7a2040' },
+    { angle: 0.10,  count: 45, lenMin: 200, lenMax: 450, wMin: 2.5, wMax: 5.0, aMin: 0.05, aMax: 0.13, color: '#c06080' },
+    { angle: -0.02, count: 40, lenMin: 150, lenMax: 350, wMin: 2.0, wMax: 4.5, aMin: 0.04, aMax: 0.11, color: '#6a1535' },
+    { angle: 0.07,  count: 35, lenMin: 220, lenMax: 500, wMin: 4.0, wMax: 7.5, aMin: 0.05, aMax: 0.12, color: '#b05070' },
+  ]
 
-    ctx.save()
-    ctx.globalAlpha = r(0.025, 0.11)
-    ctx.strokeStyle = r(0, 1) > 0.3 ? '#5a2840' : '#3a1020'
-    ctx.lineWidth   = r(0.35, 1.1)
-    ctx.beginPath()
-    ctx.moveTo(x, y)
-    ctx.bezierCurveTo(
-      x + Math.cos(angle) * len * 0.3 + r(-wobble, wobble),
-      y + Math.sin(angle) * len * 0.3 + r(-wobble, wobble),
-      x + Math.cos(angle) * len * 0.7 + r(-wobble, wobble),
-      y + Math.sin(angle) * len * 0.7 + r(-wobble, wobble),
-      x + Math.cos(angle) * len,
-      y + Math.sin(angle) * len,
-    )
-    ctx.stroke()
-    ctx.restore()
-  }
+  for (const pass of passes) {
+    const baseAngle = pass.angle
+    for (let i = 0; i < pass.count; i++) {
+      // Spread strokes across the full canvas including edges
+      const sx = r(-80, W + 80)
+      const sy = r(-20, H + 20)
 
-  // ── hatching clusters (dense local groups of near-parallel lines) ──
-  const clusterCount = ri(18, 28)
-  for (let c = 0; c < clusterCount; c++) {
-    const cx        = r(0, W)
-    const cy        = r(0, H)
-    const baseAngle = r(0, Math.PI)
-    const perp      = baseAngle + Math.PI / 2
-    const count     = ri(3, 11)
-    const spacing   = r(2.5, 7)
+      // Per-stroke angle jitter — stays close to the pass direction
+      const angle  = baseAngle + r(-0.12, 0.12)
+      const len    = r(pass.lenMin, pass.lenMax)
 
-    for (let s = 0; s < count; s++) {
-      const offset = (s - count / 2) * spacing
-      const sx     = cx + Math.cos(perp) * offset + r(-2, 2)
-      const sy     = cy + Math.sin(perp) * offset + r(-2, 2)
-      const len    = r(12, 52)
+      // Slight S-curve to mimic real crayon hand movement
+      const bend1x = r(-18, 18)
+      const bend1y = r(-10, 10)
+      const bend2x = r(-18, 18)
+      const bend2y = r(-10, 10)
+
+      const ex = sx + Math.cos(angle) * len
+      const ey = sy + Math.sin(angle) * len
 
       ctx.save()
-      ctx.globalAlpha = r(0.03, 0.10)
-      ctx.strokeStyle = '#4a1f35'
-      ctx.lineWidth   = r(0.3, 0.85)
+      ctx.globalAlpha = r(pass.aMin, pass.aMax)
+      ctx.strokeStyle = pass.color
+      ctx.lineWidth   = r(pass.wMin, pass.wMax)
       ctx.beginPath()
       ctx.moveTo(sx, sy)
-      ctx.lineTo(
-        sx + Math.cos(baseAngle) * len + r(-4, 4),
-        sy + Math.sin(baseAngle) * len + r(-4, 4),
+      ctx.bezierCurveTo(
+        sx + Math.cos(angle) * len * 0.33 + bend1x,
+        sy + Math.sin(angle) * len * 0.33 + bend1y,
+        sx + Math.cos(angle) * len * 0.66 + bend2x,
+        sy + Math.sin(angle) * len * 0.66 + bend2y,
+        ex, ey,
       )
       ctx.stroke()
       ctx.restore()
     }
   }
 
-  // ── small scribble bursts (idle doodle marks) ──────────────────────
-  for (let i = 0; i < 90; i++) {
-    let x = r(0, W)
-    let y = r(0, H)
-    const steps = ri(2, 6)
+  // ── fine grain layer — shorter overlapping strokes for paper texture ──
+  for (let i = 0; i < 120; i++) {
+    const sx    = r(-30, W + 30)
+    const sy    = r(-10, H + 10)
+    const angle = r(-0.18, 0.18)
+    const len   = r(40, 120)
 
     ctx.save()
-    ctx.globalAlpha = r(0.025, 0.075)
-    ctx.strokeStyle = '#5a1530'
-    ctx.lineWidth   = r(0.4, 1.1)
+    ctx.globalAlpha = r(0.03, 0.09)
+    ctx.strokeStyle = r(0, 1) > 0.5 ? '#8a2545' : '#5a1030'
+    ctx.lineWidth   = r(1.2, 2.8)
     ctx.beginPath()
-    ctx.moveTo(x, y)
-    for (let s = 0; s < steps; s++) {
-      x += r(-14, 14)
-      y += r(-14, 14)
-      ctx.lineTo(x, y)
-    }
-    ctx.stroke()
-    ctx.restore()
-  }
-
-  // ── very faint long sweeping strokes (depth / paper feel) ─────────
-  for (let i = 0; i < 30; i++) {
-    const x     = r(-50, W + 50)
-    const y     = r(-50, H + 50)
-    const angle = r(-0.4, 0.4) + (r(0, 1) > 0.5 ? 0 : Math.PI / 2)
-    const len   = r(80, 220)
-
-    ctx.save()
-    ctx.globalAlpha = r(0.008, 0.03)
-    ctx.strokeStyle = '#3a1020'
-    ctx.lineWidth   = r(0.5, 1.5)
-    ctx.beginPath()
-    ctx.moveTo(x, y)
-    ctx.quadraticCurveTo(
-      x + Math.cos(angle) * len * 0.5 + r(-20, 20),
-      y + Math.sin(angle) * len * 0.5 + r(-20, 20),
-      x + Math.cos(angle) * len,
-      y + Math.sin(angle) * len,
+    ctx.moveTo(sx, sy)
+    ctx.lineTo(
+      sx + Math.cos(angle) * len + r(-8, 8),
+      sy + Math.sin(angle) * len + r(-5, 5),
     )
     ctx.stroke()
     ctx.restore()

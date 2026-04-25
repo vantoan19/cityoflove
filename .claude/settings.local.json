@@ -50,7 +50,11 @@
       "Bash(xargs ls *)",
       "Bash(cp -r C:/Projects/city/backgrounds_high/sky/. C:/Projects/city/public/chapter1/backgrounds/sky/)",
       "Bash(cp -r C:/Projects/city/backgrounds_high/city_buildings/. C:/Projects/city/public/chapter1/backgrounds/city_buildings/)",
-      "Bash(cp -r C:/Projects/city/backgrounds_high/foreground_bushes/. C:/Projects/city/public/chapter1/backgrounds/foreground_bushes/)"
+      "Bash(cp -r C:/Projects/city/backgrounds_high/foreground_bushes/. C:/Projects/city/public/chapter1/backgrounds/foreground_bushes/)",
+      "Bash(python3 -c \"from PIL import Image; print\\('ok'\\)\")",
+      "Bash(magick --version)",
+      "Bash(convert --version)",
+      "Bash(magick *)"
     ]
   },
   "enableAllProjectMcpServers": true,

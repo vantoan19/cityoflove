@@ -216,6 +216,12 @@
       opacity: 1;
       pointer-events: auto;
     }
+    #cloud-overlay {
+      position: fixed; inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 1000;
+    }
   </style>
 </head>
 <body>
@@ -227,9 +233,10 @@
 </div>
 
 <!-- Next chapter button — shown on last message -->
-<button class="next-btn" id="next-btn" onclick="location.href='../chapter3/index.html'">
+<button class="next-btn" id="next-btn">
   next chapter →
 </button>
+<div id="cloud-overlay"></div>
 
 <div class="letter-wrap">
   <div class="letter" id="letter">
@@ -370,6 +377,9 @@
   const nextBtn  = document.getElementById('next-btn');
   const messages = Array.from(document.querySelectorAll('.message'));
 
+  // Snapshot original HTML so we can reset each message before re-typing
+  const originals = messages.map(m => m.innerHTML);
+
   let current   = -1;
   let animating = false;
   let letterH   = 0;
@@ -377,32 +387,26 @@
   gsap.set(messages, { opacity: 0 });
   gsap.set(letter,   { opacity: 0 });
 
-  /* ── Layout: size letter to image's exact aspect ratio,
-        then distribute messages evenly across the writing area ── */
+  /* ── Layout ──────────────────────────────────────────────────── */
   function layout() {
-    const W     = window.innerWidth;
-    letterH     = W * imgRatio;
+    const W = window.innerWidth;
+    letterH = W * imgRatio;
     letter.style.height = letterH + 'px';
 
-    // Writing area: 13 % from top (clears heart) → 91 % from top (clears bottom border)
-    const yTop  = letterH * 0.13;
-    const yBot  = letterH * 0.84;
-    const span  = yBot - yTop;
-    const step  = span / messages.length;
+    const yTop = letterH * 0.13;
+    const yBot = letterH * 0.84;
+    const step = (yBot - yTop) / messages.length;
 
     messages.forEach((el, i) => {
-      // Centre each message in its slot
       const slotMid = yTop + i * step + step / 2;
       const elH     = el.offsetHeight || 0;
       el.style.top  = (slotMid - elH / 2) + 'px';
     });
 
-    // Re-snap camera to current message without animation
     if (current >= 0) gsap.set(letter, { y: panTarget(current) });
   }
 
-  /* ── Pan target: centres message at 42 % of viewport,
-        clamped so the letter never scrolls beyond its edges ── */
+  /* ── Pan target ──────────────────────────────────────────────── */
   function panTarget(index) {
     const el  = messages[index];
     const mid = parseFloat(el.style.top) + el.offsetHeight / 2;
@@ -411,8 +415,8 @@
     return -Math.min(Math.max(raw, 0), Math.max(letterH - vh, 0));
   }
 
-  /* ── Load image to get natural ratio, then boot ─────────────── */
-  let imgRatio = 2;   // fallback until image loads
+  /* ── Image probe → boot ──────────────────────────────────────── */
+  let imgRatio = 2;
   const probe  = new Image();
   probe.onload = function () {
     imgRatio = this.naturalHeight / this.naturalWidth;
@@ -422,6 +426,71 @@
   };
   probe.src = 'letter_long.png';
 
+  /* ── Typing engine ───────────────────────────────────────────── */
+  let pendingTimers = [];
+
+  function cancelTyping() {
+    pendingTimers.forEach(clearTimeout);
+    pendingTimers = [];
+  }
+
+  function typeMessage(index) {
+    cancelTyping();
+    const msg = messages[index];
+
+    // Restore original HTML so we always type from a clean slate
+    msg.innerHTML = originals[index];
+
+    // m14: special cursor + reply behaviour
+    if (msg.id === 'm14') {
+      gsap.to(msg, { opacity: 1, duration: 0.4 });
+      pendingTimers.push(setTimeout(startTyping, 500));
+      return;
+    }
+
+    const paras = Array.from(msg.querySelectorAll('p:not(.reply)'));
+
+    // Separate plain-text paras (type them) from rich paras (fade them in)
+    const items = paras.map(p => {
+      if (p.children.length === 0) {
+        const text = p.textContent;
+        p.textContent = '';
+        return { p, text, plain: true };
+      }
+      gsap.set(p, { opacity: 0 });
+      return { p, text: null, plain: false };
+    });
+
+    // Container fades in immediately; text types inside it
+    gsap.to(msg, { opacity: 1, duration: 0.25 });
+
+    let delay = 80;  // small pause before first character
+    items.forEach(({ p, text, plain }) => {
+      if (!plain) {
+        // Rich paragraph (e.g. the 👀 line) — fade in after surrounding text
+        const d = delay;
+        pendingTimers.push(setTimeout(() => {
+          gsap.to(p, { opacity: 1, duration: 0.5 });
+          // Trigger eyes animation if this is m2
+          if (msg.id === 'm2') {
+            setTimeout(() => p.querySelector('.eyes')?.classList.add('active'), 300);
+          }
+        }, d));
+        delay += 700;
+        return;
+      }
+
+      // Type character by character
+      for (let i = 0; i < text.length; i++) {
+        const c    = text[i];
+        const fire = delay;
+        pendingTimers.push(setTimeout(() => { p.textContent += c; }, fire));
+        delay += 20 + Math.random() * 20;  // 20–40 ms per character
+      }
+      delay += 220;  // breath between paragraphs
+    });
+  }
+
   /* ── Core transition ─────────────────────────────────────────── */
   function goTo(index) {
     if (animating) return;
@@ -429,6 +498,8 @@
     if (index < -1 || index >= messages.length) return;
 
     animating = true;
+    cancelTyping();
+
     const tl = gsap.timeline({ onComplete: () => { animating = false; } });
 
     // Fade out current
@@ -442,26 +513,16 @@
     const targetY = index === -1 ? 0 : panTarget(index);
     tl.to(letter, { y: targetY, duration: 0.75, ease: 'power2.inOut' }, 0.15);
 
-    // Fade in
+    // Trigger typing (or restore hint)
     if (index === -1) {
       tl.to(hintEl, { opacity: 1, duration: 0.4 }, 0.65);
     } else {
-      tl.to(messages[index], { opacity: 1, duration: 0.6, ease: 'power1.out' }, 0.6);
+      tl.call(() => typeMessage(index), null, 0.6);
     }
 
-    // Special effects
-    if (index >= 0) {
-      if (messages[index].id === 'm2')
-        tl.call(() => document.querySelector('.eyes').classList.add('active'), null, 0.85);
-      if (messages[index].id === 'm14')
-        tl.call(() => startTyping(), null, 0.9);
-    }
-
-    // Show next-chapter button only on the last message
+    // Next-chapter button
     const isLast = index === messages.length - 1;
-    tl.call(() => {
-      nextBtn.classList.toggle('visible', isLast);
-    }, null, isLast ? 1.0 : 0);
+    tl.call(() => nextBtn.classList.toggle('visible', isLast), null, isLast ? 1.8 : 0);
 
     current = index;
   }
@@ -481,8 +542,7 @@
     const dy = touchY0 - e.changedTouches[0].clientY;
     touchY0 = null;
     if (Math.abs(dy) < 40 || animating) return;
-    const dir = dy > 0 ? 1 : -1;
-    goTo(Math.min(Math.max(current + dir, -1), messages.length - 1));
+    goTo(Math.min(Math.max(current + (dy > 0 ? 1 : -1), -1), messages.length - 1));
   }, { passive: true });
 
   window.addEventListener('keydown', e => {
@@ -517,17 +577,80 @@
     audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
   });
 
-  /* ── Typing animation (m14) ──────────────────────────────────── */
+  /* ── Cloud wipe transition ──────────────────────────────────── */
+  (function () {
+    const cloudOverlay = document.getElementById('cloud-overlay');
+
+    function buildCloud(r, color) {
+      const VW = window.innerWidth, VH = window.innerHeight;
+      const n  = Math.ceil(VH / (r * 2)) + 3;
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.style.cssText = `position:absolute;top:0;left:0;width:${VW}px;height:${VH}px;overflow:visible;will-change:transform;`;
+      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      rect.setAttribute('x', r); rect.setAttribute('y', -(r * 2));
+      rect.setAttribute('width', VW * 3); rect.setAttribute('height', VH + r * 4);
+      rect.setAttribute('fill', color);
+      svg.appendChild(rect);
+      for (let i = -1; i <= n; i++) {
+        const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        c.setAttribute('cx', r); c.setAttribute('cy', i * r * 2 + r);
+        c.setAttribute('r', r); c.setAttribute('fill', color);
+        svg.appendChild(c);
+      }
+      return svg;
+    }
+
+    function animateCloud(svg, startX, endX, duration, delay, onDone) {
+      svg.style.transform = `translateX(${startX}px)`;
+      cloudOverlay.appendChild(svg);
+      const eio = t => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      let t0 = null;
+      const go = ts => {
+        if (!t0) t0 = ts;
+        const p = Math.min((ts - t0) / duration, 1);
+        svg.style.transform = `translateX(${startX + (endX - startX) * eio(p)}px)`;
+        if (p < 1) { requestAnimationFrame(go); }
+        else { cloudOverlay.removeChild(svg); if (onDone) onDone(); }
+      };
+      setTimeout(() => requestAnimationFrame(go), delay);
+    }
+
+    function runCloudTransition(onComplete) {
+      const VW = window.innerWidth, VH = window.innerHeight;
+      const R       = Math.round(VH / 9);
+      const DUR     = 420;
+      const STAGGER = 260;
+      const start = VW, end = -VW * 3;
+      const waves = [
+        { r: R,         color: '#FFB7C5' },
+        { r: R * 0.92,  color: '#FFCCD7' },
+        { r: R * 1.05,  color: '#FFB7C5' },
+      ];
+      waves.forEach((w, i) => {
+        const svg = buildCloud(w.r, w.color);
+        animateCloud(svg, start, end, DUR, i * STAGGER,
+          i === waves.length - 1 ? onComplete : null);
+      });
+    }
+
+    document.getElementById('next-btn').addEventListener('click', () => {
+      runCloudTransition(() => { window.location.href = '../chapter3/index.html'; });
+    });
+  })();
+
+  /* ── m14 cursor typing ───────────────────────────────────────── */
   function startTyping() {
     const text = 'I texted you.', typed = document.getElementById('typed'),
           cursor = document.getElementById('csr'), reply = document.getElementById('reply');
     let i = 0;
     typed.textContent = '';
+    cursor.style.display = '';
+    reply.classList.remove('shown');
     const tick = () => {
-      if (i < text.length) { typed.textContent += text[i++]; setTimeout(tick, 55 + Math.random() * 65); }
-      else setTimeout(() => { cursor.style.display = 'none'; reply.classList.add('shown'); }, 900);
+      if (i < text.length) { typed.textContent += text[i++]; pendingTimers.push(setTimeout(tick, 55 + Math.random() * 65)); }
+      else pendingTimers.push(setTimeout(() => { cursor.style.display = 'none'; reply.classList.add('shown'); }, 900));
     };
-    setTimeout(tick, 500);
+    tick();
   }
 </script>
 </body>

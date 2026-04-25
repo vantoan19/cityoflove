@@ -1,0 +1,241 @@
+/* ── Chapter 2 — Letter Experience ───────────────────────────── */
+
+.ch2-root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #F4A7B9;
+  font-family: var(--font-caveat), cursive;
+}
+
+/* Fixed viewport — letter pans inside */
+.ch2-letter-wrap {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* The letter div — sized by JS to exact image aspect ratio */
+.ch2-letter {
+  position: relative;
+  width: 100%;
+  background: url('/chapter2/letter_long.png') top center / 100% 100% no-repeat;
+  will-change: transform;
+}
+
+/* ── Message blocks — positioned absolutely by JS ── */
+.ch2-message {
+  position: absolute;
+  left: 12%;
+  width: 76%;
+  opacity: 0;
+  text-align: center;
+}
+
+.ch2-message p {
+  font-size: clamp(28px, 4vw, 52px);
+  font-weight: 600;
+  line-height: 1.85;
+  color: #3a2028;
+  text-align: center;
+}
+
+.ch2-message p.ch2-emph {
+  font-size: clamp(32px, 4.6vw, 60px);
+  font-weight: 700;
+}
+
+.ch2-message p.ch2-big {
+  font-size: clamp(38px, 5.5vw, 72px);
+  font-weight: 700;
+}
+
+/* ── Persona colors ── */
+.ch2-message p.ch2-morning   { color: #C87941; }
+.ch2-message p.ch2-afternoon { color: #7B6BA8; }
+
+/* ── Scroll hint ── */
+.ch2-hint {
+  position: fixed;
+  bottom: 48px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-caveat), cursive;
+  font-size: clamp(16px, 2vw, 22px);
+  color: #5a3540;
+  text-align: center;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 10;
+}
+.ch2-hint-arrow {
+  display: block;
+  margin-top: 6px;
+  animation: ch2Bounce 1.5s ease-in-out infinite;
+}
+@keyframes ch2Bounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(8px); }
+}
+
+/* ── 👀 flash ── */
+.ch2-eyes {
+  display: inline-block;
+  opacity: 0;
+  animation: ch2EyesPop 2.5s ease forwards;
+  animation-play-state: paused;
+}
+.ch2-eyes.active { animation-play-state: running; }
+@keyframes ch2EyesPop {
+  0%   { opacity: 0; transform: scale(0.4); }
+  15%  { opacity: 1; transform: scale(1.2); }
+  45%  { opacity: 1; transform: scale(1); }
+  80%  { opacity: 1; }
+  100% { opacity: 0; transform: scale(0.7); }
+}
+
+/* ── "Hey Jude" song title ── */
+.ch2-song-title {
+  font-size: clamp(32px, 4.2vw, 56px) !important;
+  font-weight: 700 !important;
+  color: #b85060 !important;
+  letter-spacing: 0.03em;
+}
+
+/* ── Sketch audio player ── */
+.ch2-sketch-player {
+  margin: 20px auto 0;
+  max-width: 320px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1.5px solid #5a3540;
+  border-radius: 3px;
+  background: rgba(253, 250, 245, 0.5);
+  transform: rotate(-0.4deg);
+  box-shadow: 2px 2px 0 rgba(90, 53, 64, 0.2);
+}
+.ch2-sp-note { font-size: 20px; color: #b85060; flex-shrink: 0; line-height: 1; }
+.ch2-sp-info { flex: 1; min-width: 0; }
+.ch2-sp-label {
+  font-family: var(--font-caveat), cursive;
+  font-size: 15px;
+  color: #3a2028;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ch2-sp-track {
+  position: relative;
+  height: 2px;
+  background: rgba(90, 53, 64, 0.2);
+  margin-top: 7px;
+  border-radius: 2px;
+  cursor: pointer;
+}
+.ch2-sp-track:hover { background: rgba(90, 53, 64, 0.35); }
+.ch2-sp-fill {
+  position: absolute;
+  left: 0; top: 0;
+  height: 100%; width: 0%;
+  background: #b85060;
+  border-radius: 2px;
+  transition: width 0.4s linear;
+}
+.ch2-sp-btn {
+  flex-shrink: 0;
+  width: 30px; height: 30px;
+  border: 1.5px solid #5a3540;
+  border-radius: 50%;
+  background: transparent;
+  color: #b85060;
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 2px;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.ch2-sp-btn:hover  { background: #b85060; color: #fdfaf5; border-color: #b85060; }
+.ch2-sp-btn:active { transform: scale(0.92); }
+
+/* ── Typing cursor (m14) ── */
+.ch2-cursor {
+  display: inline-block;
+  width: 2px; height: 0.85em;
+  background: #3a2028;
+  margin-left: 3px;
+  vertical-align: middle;
+  animation: ch2Blink 0.85s step-end infinite;
+}
+@keyframes ch2Blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+.ch2-reply {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.ch2-reply.shown { opacity: 1; transform: translateY(0); }
+
+/* ── Chapter opening splash ── */
+.ch2-opening {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #F4A7B9;
+  cursor: pointer;
+}
+
+.ch2-opening-sub {
+  font-family: var(--font-caveat), cursive;
+  font-size: clamp(16px, 2.2vw, 28px);
+  color: #5a3540;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin: 0 0 12px;
+  text-align: center;
+}
+
+.ch2-opening-title {
+  font-family: var(--font-caveat), cursive;
+  font-size: clamp(34px, 5.5vw, 70px);
+  font-weight: 700;
+  color: #3a2028;
+  margin: 0;
+  text-align: center;
+  max-width: 80vw;
+  line-height: 1.25;
+}
+
+/* ── Next chapter button ── */
+.ch2-next-btn {
+  position: fixed;
+  bottom: 48px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-0.4deg);
+  font-family: var(--font-caveat), cursive;
+  font-size: clamp(18px, 2.4vw, 28px);
+  font-weight: 600;
+  color: #5a3540;
+  background: rgba(253, 250, 245, 0.85);
+  border: 1.5px solid #5a3540;
+  border-radius: 3px;
+  padding: 10px 28px;
+  cursor: pointer;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  box-shadow: 2px 2px 0 rgba(90, 53, 64, 0.18);
+  transition: background 0.2s, color 0.2s, opacity 0.5s;
+  z-index: 10;
+}
+.ch2-next-btn:hover  { background: #5a3540; color: #fdfaf5; }
+.ch2-next-btn.ch2-visible { opacity: 1; pointer-events: auto; }

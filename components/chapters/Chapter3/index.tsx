@@ -1,13 +1,39 @@
 'use client'
-import { useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import gsap from 'gsap'
+import Background from './Background'
+import SpriteAnimation from '../Chapter1/SpriteAnimation'
+import SpeechBubble from '../Chapter1/SpeechBubble'
 import './chapter3.css'
+
+const mk = (char: string, pose: string, count: number) =>
+  Array.from({ length: count }, (_, i) => `/chapter1/characters/${char}/${pose}/frame${i + 1}.png`)
+
+const NICK_POSES: Record<string, { frames: string[]; frameInterval: number }> = {
+  pose1_neutral_idle:         { frames: mk('nick', 'pose1_neutral_idle',        3), frameInterval: 350 },
+  pose3_shrug:                { frames: mk('nick', 'pose3_shrug',               3), frameInterval: 300 },
+  pose4_pointing_up:          { frames: mk('nick', 'pose4_pointing_up',         2), frameInterval: 300 },
+  pose6_finger_guns:          { frames: mk('nick', 'pose6_finger_guns',         2), frameInterval: 250 },
+}
+
+const JUDY_POSES: Record<string, { frames: string[]; frameInterval: number }> = {
+  pose1_neutral_idle:         { frames: mk('judy', 'pose1_neutral_idle',        3), frameInterval: 350 },
+  pose3_curious_pointing:     { frames: mk('judy', 'pose3_curious_pointing',    2), frameInterval: 500 },
+  pose4_surprised:            { frames: mk('judy', 'pose4_surprised',           3), frameInterval: 350 },
+  pose5_amused:               { frames: mk('judy', 'pose5_amused',              2), frameInterval: 550 },
+  pose6_warm_happy:           { frames: mk('judy', 'pose6_warm_happy',          2), frameInterval: 550 },
+}
 
 interface Props { onComplete: () => void }
 
 export default function Chapter3({ onComplete }: Props) {
   const onCompleteRef = useRef(onComplete)
   onCompleteRef.current = onComplete
+
+  const [nickPose, setNickPose] = useState('pose1_neutral_idle')
+  const [judyPose, setJudyPose] = useState('pose1_neutral_idle')
+  const [narrationText, setNarrationText] = useState<string | null>(null)
+  const [hintLabel, setHintLabel] = useState<string | null>(null)
 
   useEffect(() => {
     // ── Data ──────────────────────────────────────────────────────
@@ -31,77 +57,42 @@ export default function Chapter3({ onComplete }: Props) {
       { message: "if one notification didn’t arrive…\nthis night wouldn’t exist" },
     ]
 
-    const BAR_GRID = { cols: 4, rows: 2, left: 0.08, top: 0.38, width: 0.84, height: 0.50 }
+    const BAR_GRID = { cols: 4, rows: 2, left: 0.08, top: 0.10, width: 0.84, height: 0.80 }
 
     // ── Phase elements ────────────────────────────────────────────
     const phase1 = document.getElementById('ch3-phase1')!
     const phase2 = document.getElementById('ch3-phase2')!
 
-    // ── Background loops ──────────────────────────────────────────
-    let skyFrame = 1
-    const skyInterval = setInterval(() => {
-      skyFrame = (skyFrame % 4) + 1
-      const el = document.getElementById('ch3-skyOverlay') as HTMLImageElement | null
-      if (el) el.src = `/chapter3/backgrounds/sky_overlays/frame${skyFrame}.png`
-    }, 700)
+    // ── Opening splash ────────────────────────────────────────────
+    const openingEl    = document.getElementById('ch3-opening')! as HTMLElement
+    const openingSub   = openingEl.querySelector('.ch3-opening-sub')!   as HTMLElement
+    const openingTitle = openingEl.querySelector('.ch3-opening-title')! as HTMLElement
+    gsap.set(openingSub,   { opacity: 0, y: 16 })
+    gsap.set(openingTitle, { opacity: 0, y: 16 })
 
-    let cityFrame = 1
-    const cityInterval = setInterval(() => {
-      cityFrame = (cityFrame % 8) + 1
-      const el = document.getElementById('ch3-cityOverlay') as HTMLImageElement | null
-      if (el) el.src = `/chapter3/backgrounds/city_overlays/frame${cityFrame}.png`
-    }, 220)
+    let openTl: gsap.core.Timeline | null = gsap.timeline()
+    openTl.to(openingSub,   { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' }, 0.4)
+    openTl.to(openingTitle, { opacity: 1, y: 0, duration: 0.9, ease: 'power2.out' }, 1.0)
+    openTl.to(openingEl,    { opacity: 0, duration: 0.8, ease: 'power1.inOut' }, 3.8)
+    openTl.call(() => {
+      gsap.set(openingEl, { display: 'none' })
+      setHintLabel('Tap anywhere to begin')
+    }, undefined, 4.7)
 
-    // ── Sprite animation ──────────────────────────────────────────
-    let nickTimer: ReturnType<typeof setInterval> | null = null
-    let judyTimer: ReturnType<typeof setInterval> | null = null
-
-    function setPose(character: 'nick' | 'judy', poseName: string) {
-      const imgEl = document.getElementById(
-        character === 'nick' ? 'ch3-foxImg' : 'ch3-bunnyImg'
-      ) as HTMLImageElement | null
-      if (!imgEl) return
-      const base = `/chapter1/characters/${character}/${poseName}/frame`
-
-      gsap.to(imgEl, { opacity: 0, duration: 0.15, onComplete: () => {
-        if (character === 'nick') { if (nickTimer) { clearInterval(nickTimer); nickTimer = null } }
-        else                      { if (judyTimer) { clearInterval(judyTimer); judyTimer = null } }
-
-        let frame = 1
-        imgEl.src = base + '1.png'
-        gsap.to(imgEl, { opacity: 1, duration: 0.15 })
-
-        const t = setInterval(() => {
-          frame = (frame % 5) + 1
-          imgEl.src = base + frame + '.png'
-        }, 200)
-
-        if (character === 'nick') nickTimer = t
-        else                      judyTimer = t
-      }})
+    const onOpeningTap = () => {
+      if (!openTl) return
+      openTl.kill(); openTl = null
+      gsap.set(openingEl, { opacity: 0, display: 'none' })
+      setHintLabel('Tap anywhere to begin')
     }
-
-    setPose('nick', 'pose1_neutral_idle')
-    setPose('judy', 'pose1_neutral_idle')
+    openingEl.addEventListener('click', onOpeningTap)
 
     // ── Narration ─────────────────────────────────────────────────
-    function showText(text: string) {
-      const el = document.getElementById('ch3-narration')
-      if (!el) return
-      gsap.to(el, { opacity: 0, duration: 0.3, onComplete: () => {
-        el.textContent = text
-        gsap.to(el, { opacity: 1, duration: 0.5 })
-      }})
-    }
-
-    function hideText() {
-      const el = document.getElementById('ch3-narration')
-      if (el) gsap.to(el, { opacity: 0, duration: 0.4 })
-    }
+    function showText(text: string) { setNarrationText(text) }
+    function hideText()             { setNarrationText(null) }
 
     // ── Beat sequencer ────────────────────────────────────────────
     let currentBeat = -1
-    let beatTimer: ReturnType<typeof setTimeout> | null = null
     let phase1Done = false
 
     function advanceBeat() {
@@ -113,32 +104,21 @@ export default function Chapter3({ onComplete }: Props) {
 
       if (beat.text === null) {
         hideText()
-        if (beatTimer) clearTimeout(beatTimer)
+        setHintLabel(null)
         setTimeout(startPhase2, 1500)
         return
       }
 
       showText(beat.text)
-      if (beat.nick) setPose('nick', beat.nick)
-      if (beat.judy) setPose('judy', beat.judy)
-
-      if (beatTimer) clearTimeout(beatTimer)
-      beatTimer = setTimeout(advanceBeat, 2500)
+      setHintLabel('Tap to continue →')
     }
 
-    const onClick = () => { if (beatTimer) clearTimeout(beatTimer); advanceBeat() }
-    const onWheel = (e: WheelEvent) => {
-      e.preventDefault()
-      if (beatTimer) clearTimeout(beatTimer)
-      advanceBeat()
-    }
+    const onClick = () => { advanceBeat() }
+    const onWheel = (e: WheelEvent) => { e.preventDefault(); advanceBeat() }
     let touchStartY = 0
     const onTouchStart = (e: TouchEvent) => { touchStartY = e.touches[0].clientY }
     const onTouchEnd   = (e: TouchEvent) => {
-      if (touchStartY - e.changedTouches[0].clientY > 30) {
-        if (beatTimer) clearTimeout(beatTimer)
-        advanceBeat()
-      }
+      if (touchStartY - e.changedTouches[0].clientY > 30) advanceBeat()
     }
 
     document.addEventListener('click',      onClick)
@@ -146,22 +126,13 @@ export default function Chapter3({ onComplete }: Props) {
     document.addEventListener('touchstart', onTouchStart, { passive: true })
     document.addEventListener('touchend',   onTouchEnd,   { passive: true })
 
-    const kickoffTimer = setTimeout(advanceBeat, 600)
-
     // ── Bar game state ────────────────────────────────────────────
     const openedBars = new Set<number>()
-    let activeMessageEl: HTMLElement | null = null
     let resizeCleanup: (() => void) | null = null
 
     // ── Grid helpers ──────────────────────────────────────────────
     function getRenderedRect(img: HTMLImageElement) {
-      const iw = img.naturalWidth,  ih = img.naturalHeight
-      const cw = img.clientWidth,   ch = img.clientHeight
-      const ir = iw / ih, cr = cw / ch
-      let rw: number, rh: number, rx: number, ry: number
-      if (ir > cr) { rw = cw; rh = cw / ir; rx = 0; ry = (ch - rh) / 2 }
-      else         { rh = ch; rw = ch * ir; ry = 0; rx = (cw - rw) / 2 }
-      return { x: rx, y: ry, w: rw, h: rh }
+      return { x: 0, y: 0, w: img.clientWidth, h: img.clientHeight }
     }
 
     function computeBarRect(index: number, r: { x: number; y: number; w: number; h: number }) {
@@ -179,7 +150,6 @@ export default function Chapter3({ onComplete }: Props) {
       if (!cell) return
       if (entering) {
         gsap.to(cell, { y: -8, duration: 0.28, ease: 'power2.out' })
-        gsap.fromTo(`.ch3-shimmer-${index}`, { x: '-150%' }, { x: '150%', duration: 0.55, ease: 'none' })
       } else {
         gsap.to(cell, { y: 0, duration: 0.28, ease: 'power2.inOut' })
       }
@@ -187,56 +157,74 @@ export default function Chapter3({ onComplete }: Props) {
 
     // ── Unwrap animation ──────────────────────────────────────────
     const UNWRAP_SUFFIXES = [
-      'wrapped', 'unwrap_2_cornerlift', 'unwrap_3_topflap45',
-      'unwrap_4_topflap90', 'unwrap_5_fullyopen', 'unwrap_6_tucked',
+      'wrapped', 'unwrap_2_topedge', 'unwrap_3_topopen',
+      'unwrap_4_wings', 'unwrap_5_flat', 'unwrap_6_revealed',
     ]
-    const UNWRAP_DELAYS_MS = [0, 120, 180, 220, 240, 200]
+    const UNWRAP_DELAYS_MS = [0, 300, 450, 550, 600, 500]
 
-    function runUnwrap(index: number, onDone: () => void) {
-      const cell   = document.getElementById(`ch3-bar-cell-${index}`)
-      const barImg = document.getElementById(`ch3-bar-img-${index}`) as HTMLImageElement | null
-      const btn    = document.getElementById(`ch3-bar-btn-${index}`)
-      if (!cell || !barImg || !btn) return
-
-      btn.style.display = 'none'
-      barImg.style.display = 'block'
-      barImg.src = `/chapter3/bars/bar_${index + 1}_wrapped.png`
-
-      gsap.timeline()
-        .to(cell, { y: -12, rotation: -2, duration: 0.48, ease: 'power2.out' })
-        .to(cell, { rotation: 1,          duration: 0.24, ease: 'power1.inOut' })
-        .to(cell, { y: 0, rotation: 0,    duration: 0.24, ease: 'power1.in'   })
-
-      const safeBarImg = barImg
-      let fi = 0
-      function nextFrame() {
-        safeBarImg.src = `/chapter3/bars/bar_${index + 1}_${UNWRAP_SUFFIXES[fi]}.png`
-        fi++
-        if (fi < UNWRAP_SUFFIXES.length) setTimeout(nextFrame, UNWRAP_DELAYS_MS[fi])
-        else                              setTimeout(onDone, 250)
-      }
-      nextFrame()
-    }
-
-    // ── Message reveal ────────────────────────────────────────────
-    function showBarMessage(index: number) {
+    function markChecked(index: number) {
       const cell = document.getElementById(`ch3-bar-cell-${index}`)
       if (!cell) return
-      const cr  = cell.getBoundingClientRect()
-      const rot = parseFloat((Math.random() * 3 - 1.5).toFixed(1))
+      const check = document.createElement('div')
+      check.className = 'ch3-bar-checked'
+      check.textContent = '✓'
+      cell.appendChild(check)
+      gsap.fromTo(check, { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.7)' })
+    }
+
+    function runUnwrap(index: number, onDone: () => void) {
+      const btn = document.getElementById(`ch3-bar-btn-${index}`)
+      if (btn) btn.style.display = 'none'
+
+      const overlay = document.createElement('div')
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:200;cursor:pointer;'
+
+      const img = document.createElement('img')
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;position:absolute;inset:0;'
+      img.src = `/chapter3/bars/bar_${index + 1}_wrapped.png`
+      overlay.appendChild(img)
 
       const msg = document.createElement('div')
-      msg.className = 'ch3-bar-message'
+      msg.className = 'ch3-overlay-message'
       msg.textContent = BAR_DATA[index].message
-      msg.style.left = `${Math.round(cr.left + cr.width / 2)}px`
-      msg.style.top  = `${Math.round(cr.top - 12)}px`
-      document.body.appendChild(msg)
-      activeMessageEl = msg
+      msg.style.opacity = '0'
+      overlay.appendChild(msg)
 
-      gsap.fromTo(msg,
-        { opacity: 0, y: 10, xPercent: -50, yPercent: -100, rotation: rot },
-        { opacity: 1, y: 0,  xPercent: -50, yPercent: -100, rotation: rot, duration: 0.4, ease: 'power2.out' }
-      )
+      const tapHint = document.createElement('div')
+      tapHint.className = 'ch3-overlay-hint'
+      tapHint.textContent = 'Tap to continue →'
+      tapHint.style.opacity = '0'
+      overlay.appendChild(tapHint)
+
+      document.body.appendChild(overlay)
+      gsap.fromTo(overlay, { opacity: 0 }, { opacity: 1, duration: 0.25 })
+
+      let unwrapped = false
+      let dismissed = false
+      const dismiss = () => {
+        if (!unwrapped || dismissed) return
+        dismissed = true
+        gsap.to(overlay, { opacity: 0, duration: 0.4, onComplete: () => {
+          overlay.remove()
+          markChecked(index)
+          onDone()
+        }})
+      }
+      overlay.addEventListener('click', dismiss)
+
+      let fi = 0
+      function nextFrame() {
+        img.src = `/chapter3/bars/bar_${index + 1}_${UNWRAP_SUFFIXES[fi]}.png`
+        fi++
+        if (fi < UNWRAP_SUFFIXES.length) {
+          setTimeout(nextFrame, UNWRAP_DELAYS_MS[fi])
+        } else {
+          unwrapped = true
+          gsap.to(msg,     { opacity: 1, duration: 0.6, ease: 'power2.out', delay: 0.4 })
+          gsap.to(tapHint, { opacity: 1, duration: 0.6, ease: 'power2.out', delay: 1.2 })
+        }
+      }
+      nextFrame()
     }
 
     // ── Lock mechanics ────────────────────────────────────────────
@@ -277,16 +265,15 @@ export default function Chapter3({ onComplete }: Props) {
       if (openedBars.has(index)) return
       if (index === 7 && openedBars.size < 7) { jigglePadlock(); return }
 
-      openedBars.add(index)
-
-      if (activeMessageEl) {
-        const prev = activeMessageEl
-        gsap.to(prev, { opacity: 0, duration: 0.3, onComplete: () => prev.remove() })
-        activeMessageEl = null
+      // Fade the entry hint once the user discovers the interaction
+      const entryHint = document.getElementById('ch3-phase2Hint')
+      if (entryHint && entryHint.style.opacity !== '0') {
+        gsap.to(entryHint, { opacity: 0, duration: 0.4, ease: 'power1.out' })
       }
 
+      openedBars.add(index)
+
       runUnwrap(index, () => {
-        showBarMessage(index)
         if (openedBars.size === 7 && !openedBars.has(7)) setTimeout(triggerLockBreak, 400)
         if (index === 7) {
           setTimeout(() => {
@@ -313,19 +300,6 @@ export default function Chapter3({ onComplete }: Props) {
         cell.id = `ch3-bar-cell-${i}`
         cell.style.cssText = `position:absolute;left:${br.x}px;top:${br.y}px;width:${br.w}px;height:${br.h}px;overflow:visible;`
 
-        const barImg = document.createElement('img')
-        barImg.id = `ch3-bar-img-${i}`
-        barImg.style.cssText = 'display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:contain;'
-        cell.appendChild(barImg)
-
-        const shimmerWrap = document.createElement('div')
-        shimmerWrap.style.cssText = 'position:absolute;inset:0;overflow:hidden;pointer-events:none;border-radius:3px;'
-        const shimmer = document.createElement('div')
-        shimmer.className = `ch3-shimmer-${i}`
-        shimmer.style.cssText = 'position:absolute;top:0;bottom:0;width:35%;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.55) 50%,transparent 100%);transform:translateX(-150%) skewX(-20deg);pointer-events:none;'
-        shimmerWrap.appendChild(shimmer)
-        cell.appendChild(shimmerWrap)
-
         const btn = document.createElement('button')
         btn.id = `ch3-bar-btn-${i}`
         btn.className = 'ch3-bar-btn' + (i === 7 ? ' ch3-bar-btn--locked' : '')
@@ -342,11 +316,9 @@ export default function Chapter3({ onComplete }: Props) {
       // Restore visual state for already-opened bars
       openedBars.forEach(i => {
         const b = document.getElementById(`ch3-bar-btn-${i}`)
-        const bi = document.getElementById(`ch3-bar-img-${i}`) as HTMLImageElement | null
-        if (b)  b.style.display = 'none'
-        if (bi) { bi.src = `/chapter3/bars/bar_${i + 1}_unwrap_6_tucked.png`; bi.style.display = 'block' }
+        if (b) b.style.display = 'none'
+        markChecked(i)
       })
-      if (activeMessageEl) { activeMessageEl.remove(); activeMessageEl = null }
     }
 
     // ── Init chocolate game ───────────────────────────────────────
@@ -364,76 +336,90 @@ export default function Chapter3({ onComplete }: Props) {
     // ── Phase 1 → 2 transition ────────────────────────────────────
     function startPhase2() {
       phase1Done = true
-      if (beatTimer)  clearTimeout(beatTimer)
-      if (nickTimer)  { clearInterval(nickTimer); nickTimer = null }
-      if (judyTimer)  { clearInterval(judyTimer); judyTimer = null }
 
       gsap.to(phase1, { opacity: 0, duration: 0.6, onComplete: () => { phase1.style.display = 'none' } })
       gsap.fromTo(phase2,
         { opacity: 0, y: '30vh' },
         { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out',
           onStart:    () => { phase2.classList.add('ch3-active') },
-          onComplete: () => { initChocGame() },
+          onComplete: () => {
+            initChocGame()
+            const entryHint = document.getElementById('ch3-phase2Hint')
+            if (entryHint) {
+              gsap.fromTo(entryHint, { opacity: 0 }, { opacity: 1, duration: 0.6, delay: 0.3 })
+            }
+          },
         }
       )
     }
 
     // ── Cleanup ───────────────────────────────────────────────────
     return () => {
-      clearTimeout(kickoffTimer)
-      if (beatTimer) clearTimeout(beatTimer)
-      clearInterval(skyInterval)
-      clearInterval(cityInterval)
-      if (nickTimer) clearInterval(nickTimer)
-      if (judyTimer) clearInterval(judyTimer)
-
+      openTl?.kill()
+      openingEl.removeEventListener('click', onOpeningTap)
       document.removeEventListener('click',      onClick)
       document.removeEventListener('wheel',      onWheel)
       document.removeEventListener('touchstart', onTouchStart)
       document.removeEventListener('touchend',   onTouchEnd)
-
       if (resizeCleanup) resizeCleanup()
-      if (activeMessageEl) activeMessageEl.remove()
-
       gsap.killTweensOf(phase1)
       gsap.killTweensOf(phase2)
-      const narration = document.getElementById('ch3-narration')
-      if (narration) gsap.killTweensOf(narration)
     }
   }, [])
 
   return (
     <div className="ch3-root">
+      {/* Opening splash */}
+      <div className="ch3-opening" id="ch3-opening">
+        <p className="ch3-opening-sub">Chapter 3</p>
+        <p className="ch3-opening-title">The night that almost didn&apos;t happen</p>
+      </div>
+
       {/* Phase 1 — cinematic narration */}
       <div id="ch3-phase1">
-        <div id="ch3-sky" style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-          <img id="ch3-skyBase"    src="/chapter3/backgrounds/sky.png"                    alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-          <img id="ch3-skyOverlay" src="/chapter3/backgrounds/sky_overlays/frame1.png"    alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', mixBlendMode: 'screen' }} />
+        <Background />
+        <div className="ch3-char ch3-nick">
+          <div key={`nick-${nickPose}`} className="ch3-char-inner">
+            {NICK_POSES[nickPose] && (
+              <SpriteAnimation
+                frames={NICK_POSES[nickPose].frames}
+                frameInterval={NICK_POSES[nickPose].frameInterval}
+                alt="Nick"
+              />
+            )}
+          </div>
+          {narrationText && (
+            <SpeechBubble key={narrationText} text={narrationText} side="left" variant="speech" />
+          )}
         </div>
-        <div id="ch3-city" style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-          <img id="ch3-cityBase"    src="/chapter3/backgrounds/city.png"                   alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-          <img id="ch3-cityOverlay" src="/chapter3/backgrounds/city_overlays/frame1.png"   alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', mixBlendMode: 'screen' }} />
+        <div className="ch3-char ch3-judy">
+          <div key={`judy-${judyPose}`} className="ch3-char-inner">
+            {JUDY_POSES[judyPose] && (
+              <SpriteAnimation
+                frames={JUDY_POSES[judyPose].frames}
+                frameInterval={JUDY_POSES[judyPose].frameInterval}
+                alt="Judy"
+              />
+            )}
+          </div>
         </div>
-        <div className="ch3-char" id="ch3-fox">
-          <img id="ch3-foxImg" src="/chapter1/characters/nick/pose1_neutral_idle/frame1.png" alt="" />
-        </div>
-        <div className="ch3-char" id="ch3-bunny">
-          <img id="ch3-bunnyImg" src="/chapter1/characters/judy/pose1_neutral_idle/frame1.png" alt="" />
-        </div>
-        <div id="ch3-narration" />
+        {hintLabel && (
+          <p key={hintLabel} className="ch3-hint">{hintLabel}</p>
+        )}
       </div>
 
       {/* Phase 2 — chocolate box game */}
       <div id="ch3-phase2">
-        <div id="ch3-chocScene" style={{ position: 'relative', width: '100%', height: '100%' }}>
+        <div id="ch3-chocScene" style={{ position: 'absolute', inset: 0 }}>
           <img
             id="ch3-chocBox"
             src="/chapter3/chocolate_box_open.png"
             alt=""
-            style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           />
           <div id="ch3-barContainer" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
         </div>
+        <div id="ch3-phase2Hint" className="ch3-phase2-hint">tap a chocolate to unwrap ♡</div>
         <div id="ch3-lockHint" className="ch3-lock-hint">open the others first</div>
         <button
           id="ch3-nextBtn"
