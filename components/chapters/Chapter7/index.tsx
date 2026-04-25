@@ -14,15 +14,138 @@ const MESSAGES = [
   { lines: ["And the same curiosity that started it."] },
 ]
 
+function drawSketchBg(canvas: HTMLCanvasElement) {
+  const ctx = canvas.getContext('2d')!
+  const W   = canvas.width
+  const H   = canvas.height
+  const r   = (a: number, b: number) => a + Math.random() * (b - a)
+  const ri  = (a: number, b: number) => Math.floor(r(a, b + 1))
+
+  // pink fill
+  ctx.fillStyle = '#F4A7B9'
+  ctx.fillRect(0, 0, W, H)
+
+  ctx.lineCap  = 'round'
+  ctx.lineJoin = 'round'
+
+  // ── scattered short strokes (main body of the sketch texture) ──────
+  for (let i = 0; i < 900; i++) {
+    const x     = r(-20, W + 20)
+    const y     = r(-20, H + 20)
+    const len   = r(6, 55)
+    const angle = r(0, Math.PI * 2)
+    const wobble = r(3, 9)
+
+    ctx.save()
+    ctx.globalAlpha = r(0.025, 0.11)
+    ctx.strokeStyle = r(0, 1) > 0.3 ? '#5a2840' : '#3a1020'
+    ctx.lineWidth   = r(0.35, 1.1)
+    ctx.beginPath()
+    ctx.moveTo(x, y)
+    ctx.bezierCurveTo(
+      x + Math.cos(angle) * len * 0.3 + r(-wobble, wobble),
+      y + Math.sin(angle) * len * 0.3 + r(-wobble, wobble),
+      x + Math.cos(angle) * len * 0.7 + r(-wobble, wobble),
+      y + Math.sin(angle) * len * 0.7 + r(-wobble, wobble),
+      x + Math.cos(angle) * len,
+      y + Math.sin(angle) * len,
+    )
+    ctx.stroke()
+    ctx.restore()
+  }
+
+  // ── hatching clusters (dense local groups of near-parallel lines) ──
+  const clusterCount = ri(18, 28)
+  for (let c = 0; c < clusterCount; c++) {
+    const cx        = r(0, W)
+    const cy        = r(0, H)
+    const baseAngle = r(0, Math.PI)
+    const perp      = baseAngle + Math.PI / 2
+    const count     = ri(3, 11)
+    const spacing   = r(2.5, 7)
+
+    for (let s = 0; s < count; s++) {
+      const offset = (s - count / 2) * spacing
+      const sx     = cx + Math.cos(perp) * offset + r(-2, 2)
+      const sy     = cy + Math.sin(perp) * offset + r(-2, 2)
+      const len    = r(12, 52)
+
+      ctx.save()
+      ctx.globalAlpha = r(0.03, 0.10)
+      ctx.strokeStyle = '#4a1f35'
+      ctx.lineWidth   = r(0.3, 0.85)
+      ctx.beginPath()
+      ctx.moveTo(sx, sy)
+      ctx.lineTo(
+        sx + Math.cos(baseAngle) * len + r(-4, 4),
+        sy + Math.sin(baseAngle) * len + r(-4, 4),
+      )
+      ctx.stroke()
+      ctx.restore()
+    }
+  }
+
+  // ── small scribble bursts (idle doodle marks) ──────────────────────
+  for (let i = 0; i < 90; i++) {
+    let x = r(0, W)
+    let y = r(0, H)
+    const steps = ri(2, 6)
+
+    ctx.save()
+    ctx.globalAlpha = r(0.025, 0.075)
+    ctx.strokeStyle = '#5a1530'
+    ctx.lineWidth   = r(0.4, 1.1)
+    ctx.beginPath()
+    ctx.moveTo(x, y)
+    for (let s = 0; s < steps; s++) {
+      x += r(-14, 14)
+      y += r(-14, 14)
+      ctx.lineTo(x, y)
+    }
+    ctx.stroke()
+    ctx.restore()
+  }
+
+  // ── very faint long sweeping strokes (depth / paper feel) ─────────
+  for (let i = 0; i < 30; i++) {
+    const x     = r(-50, W + 50)
+    const y     = r(-50, H + 50)
+    const angle = r(-0.4, 0.4) + (r(0, 1) > 0.5 ? 0 : Math.PI / 2)
+    const len   = r(80, 220)
+
+    ctx.save()
+    ctx.globalAlpha = r(0.008, 0.03)
+    ctx.strokeStyle = '#3a1020'
+    ctx.lineWidth   = r(0.5, 1.5)
+    ctx.beginPath()
+    ctx.moveTo(x, y)
+    ctx.quadraticCurveTo(
+      x + Math.cos(angle) * len * 0.5 + r(-20, 20),
+      y + Math.sin(angle) * len * 0.5 + r(-20, 20),
+      x + Math.cos(angle) * len,
+      y + Math.sin(angle) * len,
+    )
+    ctx.stroke()
+    ctx.restore()
+  }
+}
+
 export default function Chapter7({ onComplete }: Props) {
   const rootRef   = useRef<HTMLDivElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
   const hintRef   = useRef<HTMLDivElement>(null)
   const dialogRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const root   = rootRef.current!
+    const canvas = canvasRef.current!
     const hint   = hintRef.current!
     const dialog = dialogRef.current!
+
+    // Draw sketch background at viewport resolution
+    canvas.width  = root.offsetWidth  || window.innerWidth
+    canvas.height = root.offsetHeight || window.innerHeight
+    drawSketchBg(canvas)
 
     const beatEls = Array.from(root.querySelectorAll<HTMLElement>('.ch7-beat'))
 
@@ -184,6 +307,8 @@ export default function Chapter7({ onComplete }: Props) {
 
   return (
     <div className="ch7-root" ref={rootRef}>
+      <canvas className="ch7-sketch-canvas" ref={canvasRef} />
+
       <div className="ch7-content">
         <div className="ch7-hint" ref={hintRef}>
           scroll to read
