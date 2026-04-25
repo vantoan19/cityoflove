@@ -1,5 +1,5 @@
 'use client'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import ChapterTransition from './ChapterTransition'
 import ChapterStub from './chapters/ChapterStub'
@@ -33,8 +33,9 @@ export default function SceneManager() {
   const [transitionDir, setTransitionDir] = useState<Dir>('rtl')
 
   // White overlay that bridges the ch0 → ch1 unmount gap
+  const ch0CompletedRef = useRef(false)
   const [ch0FadeOut, setCh0FadeOut] = useState(false)
-  const [ch0FadeOpacity, setCh0FadeOpacity] = useState(1)
+  const [ch0FadeOpacity, setCh0FadeOpacity] = useState(0)
 
   const advanceChapter = useCallback((to: number) => {
     setTransitionDir(dirFor(to))
@@ -53,6 +54,8 @@ export default function SceneManager() {
 
   // ch0 complete: direct switch to ch1, no cloud wipe
   const handleCh0Complete = useCallback(() => {
+    if (ch0CompletedRef.current) return
+    ch0CompletedRef.current = true
     setCurrentChapter(1)
     setCh0FadeOut(true)
     setCh0FadeOpacity(1)
@@ -62,6 +65,8 @@ export default function SceneManager() {
         setCh0FadeOpacity(0)
       })
     })
+    // Fallback: guarantee cleanup even if transitionend never fires (e.g. hidden tab)
+    setTimeout(() => setCh0FadeOut(false), 700)
   }, [])
 
   return (
