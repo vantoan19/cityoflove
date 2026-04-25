@@ -5,7 +5,19 @@
   height: 100%;
   overflow: hidden;
   position: relative;
-  background: #F4A7B9;
+  background-color: #F4A7B9;
+  /* paper-grain noise + faint diagonal pencil hatching = sketch-on-paper feel */
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.13'/%3E%3C/svg%3E"),
+    repeating-linear-gradient(
+      -48deg,
+      transparent,
+      transparent 11px,
+      rgba(90, 40, 64, 0.028) 11px,
+      rgba(90, 40, 64, 0.028) 12px
+    );
+  background-repeat: repeat, repeat;
+  background-size: 200px 200px, auto;
   font-family: var(--font-caveat), cursive;
 }
 
