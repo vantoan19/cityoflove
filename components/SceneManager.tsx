@@ -6,6 +6,7 @@ import ChapterStub from './chapters/ChapterStub'
 
 type Dir = 'rtl' | 'ltr' | 'btt' | 'ttb'
 
+const Chapter0 = dynamic(() => import('./chapters/Chapter0'), { ssr: false })
 const Chapter1 = dynamic(() => import('./chapters/Chapter1'), { ssr: false })
 const Chapter2 = dynamic(() => import('./chapters/Chapter2'), { ssr: false })
 const Chapter3 = dynamic(() => import('./chapters/Chapter3'), { ssr: false })
@@ -23,13 +24,17 @@ export default function SceneManager() {
   const [currentChapter, setCurrentChapter] = useState(() => {
     if (typeof window !== 'undefined') {
       const n = parseInt(window.location.hash.replace('#ch', ''), 10)
-      if (n >= 1) return n
+      if (!isNaN(n) && n >= 0) return n
     }
-    return 1
+    return 0
   })
   const [transitioning, setTransitioning] = useState(false)
   const [pendingChapter, setPendingChapter] = useState<number | null>(null)
   const [transitionDir, setTransitionDir] = useState<Dir>('rtl')
+
+  // White overlay that bridges the ch0 → ch1 unmount gap
+  const [ch0FadeOut, setCh0FadeOut] = useState(false)
+  const [ch0FadeOpacity, setCh0FadeOpacity] = useState(1)
 
   const advanceChapter = useCallback((to: number) => {
     setTransitionDir(dirFor(to))
@@ -46,8 +51,26 @@ export default function SceneManager() {
     setPendingChapter(null)
   }, [])
 
+  // ch0 complete: direct switch to ch1, no cloud wipe
+  const handleCh0Complete = useCallback(() => {
+    setCurrentChapter(1)
+    setCh0FadeOut(true)
+    setCh0FadeOpacity(1)
+    // Two rAF ticks to ensure the div is painted at opacity 1 before transitioning
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setCh0FadeOpacity(0)
+      })
+    })
+  }, [])
+
   return (
     <div style={{ width: '100vw', height: '100dvh', overflow: 'hidden', position: 'relative' }}>
+      {currentChapter === 0 && (
+        <div data-testid="chapter-0" style={{ width: '100%', height: '100%' }}>
+          <Chapter0 onComplete={handleCh0Complete} />
+        </div>
+      )}
       {currentChapter === 1 && (
         <div data-testid="chapter-1" style={{ width: '100%', height: '100%' }}>
           <Chapter1 onComplete={() => advanceChapter(2)} />
@@ -81,6 +104,23 @@ export default function SceneManager() {
           />
         </div>
       )}
+
+      {/* White overlay that fades out after ch0 → ch1 switch */}
+      {ch0FadeOut && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: '#fff',
+            opacity: ch0FadeOpacity,
+            transition: 'opacity 500ms ease-in-out',
+            zIndex: 50,
+            pointerEvents: 'none',
+          }}
+          onTransitionEnd={() => setCh0FadeOut(false)}
+        />
+      )}
+
       <ChapterTransition
         active={transitioning}
         dir={transitionDir}
