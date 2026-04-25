@@ -25,7 +25,6 @@ const OPENING_FRAMES = [
   '/loveletter/opening/frame7.png',
 ]
 
-// Display duration (ms) for each opening frame
 const OPENING_DURATIONS = [120, 120, 120, 120, 150, 150, 150]
 
 const CORRECT_PASSWORD = '19/03/2026'
@@ -34,6 +33,9 @@ export default function Chapter0({ onComplete }: Props) {
   const onCompleteRef = useRef(onComplete)
   onCompleteRef.current = onComplete
 
+  // Pending timers from event handlers — cleared on unmount
+  const pendingTimers = useRef<ReturnType<typeof setTimeout>[]>([])
+
   const [phase, setPhase] = useState<Phase>('idle')
   const [idleFrame, setIdleFrame] = useState(0)
   const [openingFrame, setOpeningFrame] = useState(0)
@@ -41,7 +43,11 @@ export default function Chapter0({ onComplete }: Props) {
   const [inputError, setInputError] = useState(false)
   const [modalClosing, setModalClosing] = useState(false)
   const [whiteVisible, setWhiteVisible] = useState(false)
-  const [zooming, setZooming] = useState(false)
+
+  // Clear all event-handler timers on unmount
+  useEffect(() => {
+    return () => { pendingTimers.current.forEach(clearTimeout) }
+  }, [])
 
   // Prefetch all frames so animations play immediately
   useEffect(() => {
@@ -60,33 +66,28 @@ export default function Chapter0({ onComplete }: Props) {
     return () => clearInterval(id)
   }, [phase])
 
-  // Opening animation sequencer
+  // Opening animation sequencer — all timer IDs captured for cancellation
   useEffect(() => {
     if (phase !== 'opening') return
     let frameIdx = 0
-    let cancelled = false
+    const timers: ReturnType<typeof setTimeout>[] = []
 
     function playFrame() {
-      if (cancelled) return
       setOpeningFrame(frameIdx)
       const duration = OPENING_DURATIONS[frameIdx]
       if (frameIdx < OPENING_FRAMES.length - 1) {
         frameIdx++
-        setTimeout(playFrame, duration)
+        timers.push(setTimeout(playFrame, duration))
       } else {
-        // Last frame: wait its duration then trigger zoom
-        setTimeout(() => {
-          if (!cancelled) {
-            setPhase('zooming')
-            setZooming(true)
-            setWhiteVisible(true)
-          }
-        }, duration)
+        timers.push(setTimeout(() => {
+          setPhase('zooming')
+          setWhiteVisible(true)
+        }, duration))
       }
     }
 
     playFrame()
-    return () => { cancelled = true }
+    return () => timers.forEach(clearTimeout)
   }, [phase])
 
   // Zoom phase: call onComplete after 850ms
@@ -106,13 +107,15 @@ export default function Chapter0({ onComplete }: Props) {
   function handleSubmit() {
     if (password.trim() === CORRECT_PASSWORD) {
       setModalClosing(true)
-      setTimeout(() => {
+      const id = setTimeout(() => {
         setPhase('opening')
         setModalClosing(false)
       }, 200)
+      pendingTimers.current.push(id)
     } else {
       setInputError(true)
-      setTimeout(() => setInputError(false), 600)
+      const id = setTimeout(() => setInputError(false), 600)
+      pendingTimers.current.push(id)
     }
   }
 
@@ -127,21 +130,18 @@ export default function Chapter0({ onComplete }: Props) {
 
   return (
     <div className="ch0-root">
-      {/* Love letter image — clicking triggers password prompt in idle phase */}
       <img
         src={currentSrc}
         alt=""
-        className={`ch0-letter-img${zooming ? ' ch0-zooming' : ''}`}
+        className={`ch0-letter-img${phase === 'zooming' ? ' ch0-zooming' : ''}`}
         onClick={handleLetterClick}
         draggable={false}
       />
 
-      {/* "tap to open" hint — visible only during idle */}
       {phase === 'idle' && (
         <div className="ch0-hint">tap to open ♡</div>
       )}
 
-      {/* Password modal — visible during prompt + closing animation */}
       {(phase === 'passwordPrompt' || modalClosing) && (
         <div className="ch0-modal-backdrop">
           <div className={`ch0-modal${modalClosing ? ' ch0-closing' : ''}`}>
@@ -167,7 +167,6 @@ export default function Chapter0({ onComplete }: Props) {
         </div>
       )}
 
-      {/* White overlay — fades in during zoom transition */}
       <div className={`ch0-white-overlay${whiteVisible ? ' ch0-fade-in' : ''}`} />
     </div>
   )
