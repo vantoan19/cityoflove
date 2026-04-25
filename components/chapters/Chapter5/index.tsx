@@ -110,9 +110,9 @@ export default function Chapter5({ onComplete }: Props) {
 
       paras.forEach(({ p }) => { p.textContent = '' })
 
-      const charMs  = m2 ? 40 : 26   // M2 slightly slower = more contemplative
+      const charMs  = m2 ? 40 : 8    // M1: rapid-fire texting; M2: contemplative
       const paraGap = 280
-      let   time    = m2 ? 380 : 60  // M2: short pause lets blur clear first
+      let   time    = m2 ? 380 : 20  // M2: short pause lets blur clear first
       const timers: ReturnType<typeof setTimeout>[] = []
 
       paras.forEach(({ p, text }) => {
@@ -125,7 +125,7 @@ export default function Chapter5({ onComplete }: Props) {
         for (let i = 0; i < text.length; i++) {
           const c    = text[i]
           const fire = time
-          time += charMs + Math.floor(Math.random() * Math.ceil(charMs * 0.5))
+          time += charMs + Math.floor(Math.random() * Math.ceil(charMs * (m2 ? 0.5 : 0.25)))
           timers.push(setTimeout(() => { p.textContent += c }, fire))
         }
         time += paraGap
