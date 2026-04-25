@@ -71,14 +71,12 @@ export default function Chapter5({ onComplete }: Props) {
   const rootRef      = useRef<HTMLDivElement>(null)
   const rainRef      = useRef<HTMLDivElement>(null)
   const fogPuffsRef  = useRef<HTMLDivElement>(null)
-  const flashRef     = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!rootRef.current || !rainRef.current || !fogPuffsRef.current || !flashRef.current) return
+    if (!rootRef.current || !rainRef.current || !fogPuffsRef.current) return
     const root      = rootRef.current
     const rain      = rainRef.current
     const fogPuffs  = fogPuffsRef.current
-    const flash     = flashRef.current
 
     spawnRain(rain, 380, 0.22, 0.42, 0.6, 1.0, 65)
 
@@ -134,49 +132,6 @@ export default function Chapter5({ onComplete }: Props) {
       })
 
       typingTimers.set(id, timers)
-    }
-
-    /* ── Memory flash ── */
-    const FLASH_SRCS: (string | null)[] = [
-      '/chapter3/backgrounds/city_night/city_base.png',
-      '/chapter4/backgrounds/bg_night_room.png',
-      '/chapter4/backgrounds/bg_restaurant_table.png',
-      '/chapter4/backgrounds/bg_tree_path.png',
-      '/chapter4/backgrounds/bg_shelter.png',
-      null,
-    ]
-
-    let memFired = false
-
-    function triggerMemoryFlash(onDone: () => void) {
-      if (memFired) return
-      memFired = true
-      const origOverflow = root.style.overflow
-      root.style.overflow = 'hidden'
-      flash.style.display = 'block'
-      let i = 0
-      function next() {
-        if (i >= FLASH_SRCS.length) {
-          root.classList.add('ch5-glitch')
-          setTimeout(() => {
-            root.classList.remove('ch5-glitch')
-            flash.style.display = 'none'
-            root.style.overflow = origOverflow
-            onDone()
-          }, 80)
-          return
-        }
-        const src = FLASH_SRCS[i++]
-        if (src) {
-          flash.style.backgroundColor = ''
-          flash.style.backgroundImage = `url('${src}')`
-        } else {
-          flash.style.backgroundImage = 'none'
-          flash.style.backgroundColor = '#ffffff'
-        }
-        setTimeout(next, 150)
-      }
-      next()
     }
 
     function activateM2() {
@@ -237,13 +192,14 @@ export default function Chapter5({ onComplete }: Props) {
           return
         }
         if (next === M2_IDX) {
-          triggerMemoryFlash(() => {
+          /* quiet pause — rain falls, then the world shifts to fog */
+          setTimeout(() => {
             activateM2()
             setTimeout(() => {
               showBeat(next)
               setTimeout(() => { animating = false }, 1400)
-            }, 900)
-          })
+            }, 1400)
+          }, 600)
         } else {
           showBeat(next)
           setTimeout(() => { animating = false }, next >= M2_IDX ? 1400 : 600)
@@ -311,8 +267,6 @@ export default function Chapter5({ onComplete }: Props) {
       <div className="ch5-rain" ref={rainRef} />
       <div className="ch5-fog" />
       <div className="ch5-fog-puffs" ref={fogPuffsRef} />
-      <div className="ch5-flash" ref={flashRef} />
-
       <div className="ch5-hint" id="ch5-hint">
         scroll to begin
         <span className="ch5-hint-arrow">↓</span>

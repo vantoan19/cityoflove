@@ -76,16 +76,6 @@
   to   { transform: translateX(var(--drift)) translateY(var(--bob)); }
 }
 
-/* ── Memory flash overlay ── */
-.ch5-flash {
-  position: fixed; inset: 0; z-index: 100;
-  display: none;
-  background-size: cover; background-position: center;
-  background-color: #fff;
-}
-.ch5-glitch {
-  filter: invert(1);
-}
 
 /* ── Scroll content — fixed viewport, CSS grid centers all beats in same cell ── */
 .ch5-scroll {
