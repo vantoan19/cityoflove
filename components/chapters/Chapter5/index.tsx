@@ -92,7 +92,8 @@ export default function Chapter5({ onComplete }: Props) {
       const paras: BeatPara[] = []
       el.querySelectorAll<HTMLElement>('p').forEach(p => {
         paras.push({ p, text: p.textContent ?? '' })
-        p.textContent = ''
+        /* do NOT clear here — beats are opacity:0 so text is invisible,
+           and double-invocation in dev would wipe the originals */
       })
       beatParas.set(id, paras)
     })
