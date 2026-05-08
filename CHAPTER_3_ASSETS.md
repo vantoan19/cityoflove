@@ -175,7 +175,7 @@ Chapter 3 uses **7 Judy poses**. 3 reused + **4 new frames** (two were already o
 ### 4.2 FROM PRIOR PLAN (already listed, needed here)
 - **Judy excited/pointing at box** — `judy_excited_point.png` (see WEBSITE_PLAN.md description)
 - **Judy bounce A** — `judy_bounce_a.png`
-- **Judy bounce B** — `judy_bounce_b.png`
+- **Judy bounce B** — `judy_bounce_b.png` 
 
 ### 4.3 NEW — Judy leaning in (`judy_leaning.png`)
 - **Purpose:** paired with Nick leaning in on any bar hover — both characters converge on the box
