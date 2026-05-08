@@ -4,7 +4,7 @@
       "command": "uvx",
       "args": ["nanobanana-mcp-server@latest"],
       "env": {
-        "GEMINI_API_KEY": "AIzaSyDyFvFTuoBkeDU_AfSFYwkubgKsKPdCqYA"
+        "GEMINI_API_KEY": "${GEMINI_API_KEY}"
       }
     }
   }

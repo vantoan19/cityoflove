@@ -2,3 +2,21 @@ node_modules
 .next
 .vercel
 .superpowers
+
+# build artifacts
+*.tsbuildinfo
+
+# python
+__pycache__/
+*.pyc
+
+# env / secrets
+.env
+.env.*
+!.env.example
+
+# claude code (keep settings.json shared, ignore local-only)
+.claude/settings.local.json
+
+# dev scratch
+debug/

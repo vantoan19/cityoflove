@@ -1,6 +1,9 @@
 import os, sys, time, json, base64, urllib.request
 
-API_KEY     = "AIzaSyDyFvFTuoBkeDU_AfSFYwkubgKsKPdCqYA"
+API_KEY = os.environ.get("GEMINI_API_KEY")
+if not API_KEY:
+    print("Set GEMINI_API_KEY in your environment.", file=sys.stderr)
+    sys.exit(1)
 MODEL       = "veo-3.1-fast-generate-preview"
 INPUT_IMAGE = r"C:\Projects\city\transitions\ref_004.png"
 OUTPUT_PATH = r"C:\Projects\city\transitions\ch2_to_ch3_hd.mp4"
